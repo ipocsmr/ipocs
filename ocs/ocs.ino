@@ -21,21 +21,12 @@
 #include "ServerConnection.h"
 #include "BasicObject.h"
 #include "ObjectStore.h"
-#include "point_t1.h"
-
-const int Servoio[4] = {3, 5, 6, 9};
 
 void setup() {
   MCUSR = 0;
   CommandInterface::getInstance().setup();
-  for (int index = 0; index < (sizeof(Servoio) / sizeof(int)); index++)
-  {
-    BasicObject* bo = new PointT1();
-    byte configData[] = {Servoio[index]};
-    bo->init(String("Points " + String(index + 1)), configData, 1);
-    ObjectStore::getInstance().addObject(bo);
-  }
   ServerConnection::getInstance().loadSaved();
+  ObjectStore::getInstance().loadSaved();
 }
 
 void loop() {

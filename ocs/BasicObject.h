@@ -24,5 +24,7 @@ class BasicObject {
     String objectName;
 };
 
+typedef BasicObject* (*initObjectFunction)();
+
 #endif
 

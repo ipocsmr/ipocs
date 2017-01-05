@@ -1,5 +1,6 @@
 #include <SPI.h>
 
+#include "ObjectStore.h"
 #include "point_t1.h"
 #include "ServerConnection.h"
 
@@ -18,6 +19,7 @@ void PointT1::objectInit(byte configData[], int configDataLen)
   this->curPos = normal + 1;
   if (configDataLen == 1)
   {
+    Serial.println("Attaching point to pin " + String(configData[0]));
     this->object.attach(configData[0]);
   }
 }
@@ -65,4 +67,12 @@ void PointT1::update()
   }
 }
 
+static BasicObject* createPointT1()
+{
+  return new PointT1();
+}
 
+__attribute__((constructor))
+static void initialize_point_t1() {
+  ObjectStore::getInstance().registerType(4, &createPointT1);
+}

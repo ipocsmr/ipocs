@@ -19,6 +19,9 @@ class ObjectStore {
       return instance;
     }
 
+    void registerType(int typeId, initObjectFunction fun);
+
+    void loadSaved();
     void addObject(BasicObject* bo);
     void handleOrder(String objectName, byte orderVec[], long orderVecLen);
     void updateObjects();
@@ -28,7 +31,8 @@ class ObjectStore {
       ObjectStoreNode* next;
       BasicObject* object;
     };
-  
+
+    initObjectFunction functions[10];
     ObjectStore();
     ObjectStore(ObjectStore const&);              // Don't Implement
     void operator=(ObjectStore const&); // Don't implement
