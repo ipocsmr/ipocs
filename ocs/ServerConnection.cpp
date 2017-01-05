@@ -5,7 +5,6 @@
 #include <EEPROM.h>
 #include <avr/wdt.h>
 
-byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
 const long reconnectTime = 1000;
 
 void reboot() {
@@ -17,6 +16,8 @@ ServerConnection::ServerConnection()
 {
   this->lastReconnect = millis() - reconnectTime;
   Serial.print("Attempting to aquire IP from DHCP...");
+  byte mac[6];
+  Configuration::getMAC(mac);
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
     Serial.println("");

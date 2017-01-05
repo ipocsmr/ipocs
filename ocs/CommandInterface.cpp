@@ -3,6 +3,7 @@
 #include "Configuration.h"
 #include <SPI.h>
 #include <Ethernet.h>
+#include <stdlib.h>
 
 const long waitAtStartTime = 4000;
 
@@ -88,6 +89,7 @@ bool CommandInterface::handleCommand(String command)
     Serial.println("Available properties");
     Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
     Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
+    Serial.println("\tmac - MAC Address of the card. Format: XX:XX:XX:XX:XX:XX");
     Serial.println("");
   }
   else if (cmd == "get")
@@ -104,6 +106,17 @@ bool CommandInterface::handleCommand(String command)
                                  + String(ip[1]) + "."
                                  + String(ip[2]) + "."
                                  + String(ip[3]));
+    }
+    else if (command == "mac")
+    {
+      byte mac[6];
+      Configuration::getMAC(mac);
+      Serial.println("mac = " + String(mac[0], 16) + ":"
+                              + String(mac[1], 16) + ":"
+                              + String(mac[2], 16) + ":"
+                              + String(mac[3], 16) + ":"
+                              + String(mac[4], 16) + ":"
+                              + String(mac[5], 16));
     }
     else
     {
@@ -127,6 +140,17 @@ bool CommandInterface::handleCommand(String command)
       ip.fromString(command);
       Configuration::setServer(ip);
       this->handleCommand("get server");
+    }
+    else if (subCmd == "mac")
+    {
+      byte mac[6];
+      char* pos = command.c_str();
+      for (int i = 0; i < 6; i++)
+      {
+        mac[i] = strtol(pos, &pos, 16);  
+      }
+      Configuration::setMAC(mac);
+      this->handleCommand("get mac");
     }
     else
     {
