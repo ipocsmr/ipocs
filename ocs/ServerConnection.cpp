@@ -15,18 +15,16 @@ void reboot() {
 ServerConnection::ServerConnection()
 {
   this->lastReconnect = millis() - reconnectTime;
-  Serial.print("Attempting to aquire IP from DHCP...");
+  Serial.print("Attempting to aquire IP from DHCP... ");
   byte mac[6];
   Configuration::getMAC(mac);
   // start the Ethernet connection:
   if (Ethernet.begin(mac) == 0) {
-    Serial.println("");
-    Serial.println("Failed to configure Ethernet using DHCP, rebooting");
+    Serial.println(" failed, rebooting");
     Serial.flush();
     reboot();
   }
-  //Print IP address
-  Serial.print(" ");
+  // Print IP address
   Serial.println(Ethernet.localIP());
 }
 
@@ -73,17 +71,13 @@ void ServerConnection::loop()
       char inChar = (char)this->server.read();
       // add it to the inputString:
       if (inChar == 'E') {
-        long order = strtoul(this->inputString.c_str(), NULL, 16);
+        int objectNum = String(this->inputString[0]).toInt();
+        int orderVal = String(this->inputString[1]).toInt();
         // Reset the input
         this->inputString = "";
-        if (order != 0) {
-          int orderVal = order & 0x0F;
-          int objectNum = order / 10;
-          if ((objectNum > 0) && (objectNum <= 4)) {
-            byte orderData[] = {orderVal};
-            ObjectStore::getInstance().handleOrder(String("Points " + String(objectNum)), orderData, 1);
-          }
-          order = 0;
+        if ((objectNum > 0) && (objectNum <= 4)) {
+          byte orderData[] = {orderVal};
+          ObjectStore::getInstance().handleOrder(String("Points " + String(objectNum)), orderData, 1);
         }
       } else
         this->inputString += inChar;
