@@ -13,7 +13,8 @@ void CommandInterface::setup()
   Serial.println("To enter setup mode - press 's' within 4 seconds");
   Serial.flush();
   long startedAt = millis();
-  while (millis() - startedAt <= waitAtStartTime)
+  unsigned int unitId = Configuration::getUnitID();
+  while (millis() - startedAt <= waitAtStartTime || unitId == 0xFFFF)
   {
     if (!Serial)
     {
@@ -22,16 +23,20 @@ void CommandInterface::setup()
     }
     if (Serial.available()) {
       char inChar = Serial.read();
-      if (inChar == 's' || inChar == 'S') {
+      if (inChar == 's' || inChar == 'S' || unitId == 0xFFFF) {
         while (Serial.available()) {
           char inChar = Serial.read();
         }
         this->setupMode();
         break;
-        Serial.println("Exited setup, resuming start");
-        Serial.flush();
       }
     }
+  }
+  if (Configuration::getUnitID() == 0xFFFF)
+  {
+    // 0xFF in a byte indicates uninitialized memory.
+    // Force setup mode...
+    this->setupMode();
   }
 }
 
