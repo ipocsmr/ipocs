@@ -52,6 +52,9 @@ void Configuration::setUnitID(unsigned int unitID)
 byte Configuration::getSD(byte data[], int dataLength)
 {
   byte storedLength = EEPROM.read(24);
+  // For unitialized memory, the value is 0xFF. If that occurs - return 0 and nothing will be loaded.
+  if (storedLength == 0xFF)
+    storedLength = 0x00;
   for(int i = 0; i < storedLength; i++)
   {
     data[i] = EEPROM.read(25 + i);
