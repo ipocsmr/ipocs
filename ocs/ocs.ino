@@ -17,6 +17,7 @@
 #include <Servo.h>
 #include <stdlib.h>
 
+#include "CommandInterface.h"
 #include "ServerConnection.h"
 #include "BasicObject.h"
 #include "ObjectStore.h"
@@ -30,12 +31,7 @@ const int Servoio[4] = {3, 5, 6, 9};
 
 void setup() {
   MCUSR = 0;
-  // Open serial communications and wait for port to open:
-  Serial.begin(9600);
-  while (!Serial) ; // wait for serial port to connect. Needed for native USB port only
-  Serial.println("USB Connected...");
-  Serial.flush();
-
+  CommandInterface::getInstance().setup();
   ServerConnection::getInstance().setServer(MJRIdator);
   for (int index = 0; index < (sizeof(Servoio) / sizeof(int)); index++)
   {
@@ -50,6 +46,7 @@ void setup() {
 }
 
 void loop() {
+  CommandInterface::getInstance().loop();  
   ServerConnection::getInstance().loop();
   ObjectStore::getInstance().updateObjects();
 }
