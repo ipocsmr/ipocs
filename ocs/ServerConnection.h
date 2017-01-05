@@ -19,8 +19,9 @@ class ServerConnection {
       return instance;
     }
 
+    void loadSaved();
     void loop();
-    void setServer(byte server[4]);
+    void setServer(IPAddress serverIP);
 
     void println(String data);
   private:
@@ -30,7 +31,7 @@ class ServerConnection {
 
     EthernetClient server;
     long lastReconnect;
-    byte serverIP[4];
+    IPAddress serverIP;
     String inputString;
 };
 

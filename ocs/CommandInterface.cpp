@@ -1,7 +1,8 @@
 
 #include "CommandInterface.h"
+#include "Configuration.h"
 #include <SPI.h>
-#include <EEPROM.h>
+#include <Ethernet.h>
 
 const long waitAtStartTime = 4000;
 
@@ -86,14 +87,23 @@ bool CommandInterface::handleCommand(String command)
     Serial.println("");
     Serial.println("Available properties");
     Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
+    Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
     Serial.println("");
   }
   else if (cmd == "get")
   {
     if (command == "unitid")
     {
-      unsigned int value = (EEPROM.read(0) << 8) + EEPROM.read(1);
+      unsigned int value = Configuration::getUnitID();
       Serial.println("unitid = " + String(value));
+    }
+    else if (command == "server")
+    {
+      IPAddress ip = Configuration::getServer();
+      Serial.println("server = " + String(ip[0]) + "."
+                                 + String(ip[1]) + "."
+                                 + String(ip[2]) + "."
+                                 + String(ip[3]));
     }
     else
     {
@@ -108,10 +118,15 @@ bool CommandInterface::handleCommand(String command)
     command.remove(0, command.indexOf(' ') + 1);
     if (subCmd == "unitid")
     {
-      unsigned int value = command.toInt();
-      EEPROM.write(0, value >> 8);
-      EEPROM.write(1, value & 0xFF);
-      Serial.println("unitid = " + String(value));
+      Configuration::setUnitID(command.toInt());
+      this->handleCommand("get unitid");
+    }
+    else if (subCmd == "server")
+    {
+      IPAddress ip;
+      ip.fromString(command);
+      Configuration::setServer(ip);
+      this->handleCommand("get server");
     }
     else
     {

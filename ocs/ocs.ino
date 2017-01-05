@@ -23,16 +23,11 @@
 #include "ObjectStore.h"
 #include "point_t1.h"
 
-// Enter a MAC address for your controller below.
-// Newer Ethernet shields have a MAC address printed on a sticker on the shield
-byte MJRIdator[] = {172, 16, 0, 105}; //Server IP address
-
 const int Servoio[4] = {3, 5, 6, 9};
 
 void setup() {
   MCUSR = 0;
   CommandInterface::getInstance().setup();
-  ServerConnection::getInstance().setServer(MJRIdator);
   for (int index = 0; index < (sizeof(Servoio) / sizeof(int)); index++)
   {
     BasicObject* bo = new PointT1();
@@ -40,9 +35,7 @@ void setup() {
     bo->init(String("Points " + String(index + 1)), configData, 1);
     ObjectStore::getInstance().addObject(bo);
   }
-
-  // give the Ethernet shield a second to initialize:
-  delay(1000);
+  ServerConnection::getInstance().loadSaved();
 }
 
 void loop() {

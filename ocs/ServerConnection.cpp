@@ -1,6 +1,8 @@
 
 #include "ServerConnection.h"
 #include "ObjectStore.h"
+#include "Configuration.h"
+#include <EEPROM.h>
 #include <avr/wdt.h>
 
 byte mac[] = { 0xDE, 0xAD, 0xBE, 0xEF, 0xFE, 0xED };
@@ -27,9 +29,15 @@ ServerConnection::ServerConnection()
   Serial.println(Ethernet.localIP());
 }
 
-void ServerConnection::setServer(byte server[4])
+void ServerConnection::loadSaved()
 {
-  memcpy(this->serverIP, server, 4);
+  IPAddress ip = Configuration::getServer();
+  this->setServer(ip);
+}
+
+void ServerConnection::setServer(IPAddress serverIP)
+{
+  this->serverIP = serverIP;
 }
 
 void ServerConnection::println(String data)

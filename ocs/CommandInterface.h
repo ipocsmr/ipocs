@@ -7,6 +7,12 @@
  * @date
  * @history see the git log of the origin repository.
  * 
+ * Storage usage:
+ * 
+ * Bytes - Usage
+ * 0-1   - Unit ID
+ * 2-18  - IPv4 (or in future IPv6 address)
+ * 19-   - Object configuration data
  */
 #ifndef COMMAND_INTERFACE_H
 #define COMMAND_INTERFACE_H
