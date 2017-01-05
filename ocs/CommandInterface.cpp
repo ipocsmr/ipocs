@@ -80,6 +80,7 @@ bool CommandInterface::handleCommand(String command)
   command.remove(0, index + 1);
   if (cmd == "help")
   {
+    /*
     Serial.println("");
     Serial.println("Available commands:");
     Serial.println("\tget <property>");
@@ -89,8 +90,10 @@ bool CommandInterface::handleCommand(String command)
     Serial.println("Available properties");
     Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
     Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
-    Serial.println("\tmac - MAC Address of the card. Format: XX:XX:XX:XX:XX:XX");
+    Serial.println("\tmac - MAC Address of the card. Format: XX XX XX XX XX XX");
+    Serial.println("\tdata - Site configuration data. Format: hex list separated by space.\n\tFirst byte is the length of the data.");
     Serial.println("");
+    */
   }
   else if (cmd == "get")
   {
@@ -118,10 +121,21 @@ bool CommandInterface::handleCommand(String command)
                               + String(mac[4], 16) + ":"
                               + String(mac[5], 16));
     }
+    else if (command == "data")
+    {
+      byte sd[200];
+      byte sdLength = Configuration::getSD(sd, 200);
+      Serial.print("data = ");
+      for (int i = 0; i < sdLength; i++)
+      {
+        Serial.print(String(sd[i], 16) + ' ');
+      }
+      Serial.println();
+    }
     else
     {
       Serial.println("Unknown property. Try again, or type help.");
-      Serial.println("");
+      Serial.println();
     }
   }
   else if (cmd == "set")
@@ -152,10 +166,26 @@ bool CommandInterface::handleCommand(String command)
       Configuration::setMAC(mac);
       this->handleCommand("get mac");
     }
+    else if (subCmd == "data")
+    {
+      byte sd[200];
+      int sdLength = 0;
+      while (command.length() != 0)
+      {
+        int spPos = command.indexOf(' ');
+        if (spPos == -1)
+          spPos = 2;
+        String byteStr = command.substring(0, spPos);
+        command.remove(0, spPos + 1);
+        sd[sdLength++] = strtol(byteStr.c_str(), NULL, 16);
+      }
+      Configuration::setSD(sd, sdLength);
+      this->handleCommand("get data");
+    }
     else
     {
       Serial.println("Unknown property. Try again, or type help.");
-      Serial.println("");
+      Serial.println();
     }
   }
   else if (cmd == "exit")
@@ -165,7 +195,7 @@ bool CommandInterface::handleCommand(String command)
   else
   {
     Serial.println("Unknown command. Try again, or type help.");
-    Serial.println("");
+    Serial.println();
   }
   return true;
 }

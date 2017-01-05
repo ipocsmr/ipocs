@@ -28,6 +28,8 @@ class Configuration {
     static void setMAC(byte newMAC[6]);
     static IPAddress getServer();
     static void setServer(IPAddress newIP);
+    static byte getSD(byte data[], int dataLength);
+    static void setSD(byte data[], int dataLength);
 };
 
 #endif

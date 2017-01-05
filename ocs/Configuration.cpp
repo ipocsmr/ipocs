@@ -37,7 +37,6 @@ void Configuration::setMAC(byte newMAC[6])
   }
 }
 
-
 unsigned int Configuration::getUnitID()
 {
   unsigned int value = (EEPROM.read(0) << 8) + EEPROM.read(1);
@@ -48,5 +47,24 @@ void Configuration::setUnitID(unsigned int unitID)
 {
   EEPROM.write(0, unitID >> 8);
   EEPROM.write(1, unitID & 0xFF);
+}
+
+byte Configuration::getSD(byte data[], int dataLength)
+{
+  byte storedLength = EEPROM.read(24);
+  for(int i = 0; i < storedLength; i++)
+  {
+    data[i] = EEPROM.read(25 + i);
+  }
+  return storedLength;
+}
+
+void Configuration::setSD(byte data[], int dataLength)
+{
+  EEPROM.write(24, dataLength);
+  for (int i = 0; i < dataLength; i++)
+  {
+    EEPROM.write(25 + i, data[i]);
+  }
 }
 
