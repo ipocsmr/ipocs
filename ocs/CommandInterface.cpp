@@ -77,18 +77,17 @@ void CommandInterface::setupMode()
   }
 }
 
-void CommandInterface::printArray(String pre, char arr[])
+void CommandInterface::printArray(String pre, byte arr[], byte arrLen)
 {
-  this->printArray(pre, arr, ':');
+  this->printArray(pre, arr, arrLen, ':', 16);
 }
 
-void CommandInterface::printArray(String pre, char arr[], char divider)
+void CommandInterface::printArray(String pre, byte arr[], byte arrLen, char divider, int base = 10)
 {
   Serial.print(pre + " = ");
-  int arrLen = sizeof(arr) / sizeof(char);
   for (int i = 0; i < arrLen; i++)
   {
-    Serial.print(String(arr[i]) + String((i != (arrLen - 1)) ? divider : ' '));
+    Serial.print(String(arr[i], base) + String((i != (arrLen - 1)) ? divider : ' '));
   }
   Serial.println();
 }
@@ -126,24 +125,23 @@ bool CommandInterface::handleCommand(String command)
     {
       IPAddress ip = Configuration::getServer();
       byte ipArr[4] = {ip[0], ip[1], ip[2], ip[3]};
-      this->printArray("server", ipArr);
+      this->printArray("server", ipArr, 4, '.', 10);
     }
     else if (command == "mac")
     {
       byte mac[6];
       Configuration::getMAC(mac);
-      this->printArray("mac", mac);
+      this->printArray("mac", mac, 6);
     }
     else if (command == "data")
     {
       byte sd[200];
       byte sdLength = Configuration::getSD(sd, 200);
-      this->printArray("data", sd, ' ');
+      this->printArray("data", sd, sdLength, ' ', 16);
     }
     else
     {
       Serial.println('?');
-      Serial.println();
     }
   }
   else if (cmd == "set")
@@ -154,14 +152,12 @@ bool CommandInterface::handleCommand(String command)
     if (subCmd == "unitid")
     {
       Configuration::setUnitID(command.toInt());
-      this->handleCommand("get unitid");
     }
     else if (subCmd == "server")
     {
       IPAddress ip;
       ip.fromString(command);
       Configuration::setServer(ip);
-      this->handleCommand("get server");
     }
     else if (subCmd == "mac")
     {
@@ -172,7 +168,6 @@ bool CommandInterface::handleCommand(String command)
         mac[i] = strtol(pos, &pos, 16);
       }
       Configuration::setMAC(mac);
-      this->handleCommand("get mac");
     }
     else if (subCmd == "data")
     {
@@ -188,12 +183,10 @@ bool CommandInterface::handleCommand(String command)
         sd[sdLength++] = strtol(byteStr.c_str(), NULL, 16);
       }
       Configuration::setSD(sd, sdLength);
-      this->handleCommand("get data");
     }
     else
     {
       Serial.println('?');
-      Serial.println();
     }
   }
   else if (cmd == "exit")
@@ -203,7 +196,6 @@ bool CommandInterface::handleCommand(String command)
   else
   {
     Serial.println('?');
-    Serial.println();
   }
   return true;
 }
