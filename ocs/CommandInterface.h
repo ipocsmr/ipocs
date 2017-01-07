@@ -32,6 +32,8 @@ class CommandInterface {
   private:
     void setupMode();
     bool handleCommand(String command);
+    void printArray(String pre, char arr[]);
+    void printArray(String pre, char arr[], char divider);
 };
 
 #endif

@@ -50,7 +50,6 @@ void CommandInterface::setupMode()
   bool inSetupMode = true;
   bool hasPrinted = false;
   String inString = "";
-  Serial.println("Setup mode. Enter command, or help for a list of commands");
   while (inSetupMode)
   {
     if (!hasPrinted)
@@ -70,12 +69,28 @@ void CommandInterface::setupMode()
         if (inString.length() == 0)
           continue;
         hasPrinted = false;
-        Serial.println("");
+        Serial.println();
         inSetupMode = this->handleCommand(inString);
         inString = "";
       }
     }
   }
+}
+
+void CommandInterface::printArray(String pre, char arr[])
+{
+  this->printArray(pre, arr, ':');
+}
+
+void CommandInterface::printArray(String pre, char arr[], char divider)
+{
+  Serial.print(pre + " = ");
+  int arrLen = sizeof(arr) / sizeof(char);
+  for (int i = 0; i < arrLen; i++)
+  {
+    Serial.print(String(arr[i]) + String((i != (arrLen - 1)) ? divider : ' '));
+  }
+  Serial.println();
 }
 
 bool CommandInterface::handleCommand(String command)
@@ -86,18 +101,18 @@ bool CommandInterface::handleCommand(String command)
   if (cmd == "help")
   {
     /*
-    Serial.println("");
-    Serial.println("Available commands:");
-    Serial.println("\tget <property>");
-    Serial.println("\tset <property> <value>");
-    Serial.println("\texit");
-    Serial.println("");
-    Serial.println("Available properties");
-    Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
-    Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
-    Serial.println("\tmac - MAC Address of the card. Format: XX XX XX XX XX XX");
-    Serial.println("\tdata - Site configuration data. Format: hex list separated by space.\n\tFirst byte is the length of the data.");
-    Serial.println("");
+      Serial.println("");
+      Serial.println("Available commands:");
+      Serial.println("\tget <property>");
+      Serial.println("\tset <property> <value>");
+      Serial.println("\texit");
+      Serial.println("");
+      Serial.println("Available properties");
+      Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
+      Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
+      Serial.println("\tmac - MAC Address of the card. Format: XX XX XX XX XX XX");
+      Serial.println("\tdata - Site configuration data. Format: hex list separated by space.\n\tFirst byte is the length of the data.");
+      Serial.println("");
     */
   }
   else if (cmd == "get")
@@ -110,36 +125,24 @@ bool CommandInterface::handleCommand(String command)
     else if (command == "server")
     {
       IPAddress ip = Configuration::getServer();
-      Serial.println("server = " + String(ip[0]) + "."
-                                 + String(ip[1]) + "."
-                                 + String(ip[2]) + "."
-                                 + String(ip[3]));
+      byte ipArr[4] = {ip[0], ip[1], ip[2], ip[3]};
+      this->printArray("server", ipArr);
     }
     else if (command == "mac")
     {
       byte mac[6];
       Configuration::getMAC(mac);
-      Serial.println("mac = " + String(mac[0], 16) + ":"
-                              + String(mac[1], 16) + ":"
-                              + String(mac[2], 16) + ":"
-                              + String(mac[3], 16) + ":"
-                              + String(mac[4], 16) + ":"
-                              + String(mac[5], 16));
+      this->printArray("mac", mac);
     }
     else if (command == "data")
     {
       byte sd[200];
       byte sdLength = Configuration::getSD(sd, 200);
-      Serial.print("data = ");
-      for (int i = 0; i < sdLength; i++)
-      {
-        Serial.print(String(sd[i], 16) + ' ');
-      }
-      Serial.println();
+      this->printArray("data", sd, ' ');
     }
     else
     {
-      Serial.println("Unknown property. Try again, or type help.");
+      Serial.println('?');
       Serial.println();
     }
   }
@@ -166,7 +169,7 @@ bool CommandInterface::handleCommand(String command)
       char* pos = command.c_str();
       for (int i = 0; i < 6; i++)
       {
-        mac[i] = strtol(pos, &pos, 16);  
+        mac[i] = strtol(pos, &pos, 16);
       }
       Configuration::setMAC(mac);
       this->handleCommand("get mac");
@@ -189,7 +192,7 @@ bool CommandInterface::handleCommand(String command)
     }
     else
     {
-      Serial.println("Unknown property. Try again, or type help.");
+      Serial.println('?');
       Serial.println();
     }
   }
@@ -199,7 +202,7 @@ bool CommandInterface::handleCommand(String command)
   }
   else
   {
-    Serial.println("Unknown command. Try again, or type help.");
+    Serial.println('?');
     Serial.println();
   }
   return true;
