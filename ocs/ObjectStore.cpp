@@ -54,7 +54,7 @@ void ObjectStore::loadSaved()
   {
     byte sdObjectLength = sd[currPos];
     byte sdObjectType = sd[currPos + 1];
-    if (sdObjectType < 10 && this.functions[sdObjectType] != NULL) {
+    if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
       BasicObject* bo = this->functions[sdObjectType]();
       bo->init(String("Points " + String(objNum + 1)), sd + (currPos + 2), sdObjectLength - 1);
       ObjectStore::getInstance().addObject(bo);
