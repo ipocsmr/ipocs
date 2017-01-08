@@ -3,6 +3,7 @@
 #include "ObjectStore.h"
 #include "point_t1.h"
 #include "ServerConnection.h"
+#include "IPOCS.h"
 
 const int normal = 20;
 const int thrown = 150;
@@ -24,24 +25,36 @@ void PointT1::objectInit(byte configData[], int configDataLen)
   }
 }
 
-byte PointT1::getStatus()
+void PointT1::handleOrder(IPOCS::Packet* basePacket)
 {
-
-}
-
-void PointT1::handleOrder(byte orderVec[], int orderVecLen)
-{
-  if (orderVecLen != 1)
+  if (basePacket->RNID_PACKET == 10)
   {
-    return;
-  }
-  switch (orderVec[0])
-  {
-    case 0: this->setPos = normal; break;
-    case 1: this->setPos = thrown; break;
-    default:
-      // Handle invalid order....
-      break;
+    IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
+    switch (packet->RQ_POINTS_COMMAND)
+    {
+      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: this->setPos = normal; break;
+      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: this->setPos = thrown; break;
+      default:
+        // TODO: Send error about invalid value
+        break;
+    }
+  } else if (basePacket->RNID_PACKET == 7) {
+    IPOCS::Message* msg = IPOCS::Message::create();
+    msg->RXID_OBJECT = this->objectName;
+
+    IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
+    switch (this->curPos) {
+      case normal: pkt->RQ_POINTS_STATE = 2; break;
+      case thrown: pkt->RQ_POINTS_STATE = 1; break;
+      default: pkt->RQ_POINTS_STATE = 3; break;
+    }
+    msg->addPacket(pkt);
+
+    ServerConnection::getInstance().send(msg);
+    msg->destroy();
+    delete msg;
+  } else {
+    // TODO: Send alarm or something about invalid packet type.
   }
 }
 
@@ -52,6 +65,20 @@ void PointT1::update()
     // For each object, handle it.
     if (this->setPos == this->curPos)
       return;
+    if (this->curPos == normal || this->curPos == thrown)
+    {
+      // Send status about moving.
+      IPOCS::Message* msg = IPOCS::Message::create();
+      msg->RXID_OBJECT = this->objectName;
+
+      IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
+      pkt->RQ_POINTS_STATE = 3;
+      msg->addPacket(pkt);
+
+      ServerConnection::getInstance().send(msg);
+      msg->destroy();
+      delete msg;
+    }
     // Else determine which direction to move.
     int direction = this->setPos > this->curPos ? +1 : -1;
     // And then move
@@ -60,9 +87,16 @@ void PointT1::update()
     // And possibly notify on reaching end position (obsolete if we have an input to look at)
     if (this->curPos == this->setPos)
     {
-      String dir = this->setPos == thrown ? String("Thrown") : String("Normal");
-      Serial.println(this->objectName + String(" in " + dir + " position"));
-      ServerConnection::getInstance().println(this->objectName + String(" in " + dir + " position"));
+      IPOCS::Message* msg = IPOCS::Message::create();
+      msg->RXID_OBJECT = this->objectName;
+
+      IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
+      pkt->RQ_POINTS_STATE = this->setPos == thrown ? 1 : 2;
+      msg->addPacket(pkt);
+
+      ServerConnection::getInstance().send(msg);
+      msg->destroy();
+      delete msg;
     }
   }
 }

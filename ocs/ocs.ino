@@ -12,14 +12,8 @@
 
 */
 
-#include <SPI.h>
-#include <Ethernet.h>
-#include <Servo.h>
-#include <stdlib.h>
-
 #include "CommandInterface.h"
 #include "ServerConnection.h"
-#include "BasicObject.h"
 #include "ObjectStore.h"
 
 void setup() {
@@ -34,4 +28,3 @@ void loop() {
   ServerConnection::getInstance().loop();
   ObjectStore::getInstance().updateObjects();
 }
-//End loop

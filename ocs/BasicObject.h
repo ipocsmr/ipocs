@@ -11,12 +11,12 @@
 #define BASICOBJECT_H
 
 #include <SPI.h>
+#include "IPOCS.h"
 
 class BasicObject {
   public:
     void init(String objectName, byte configData[], int configDataLen);
-    virtual byte getStatus() = 0;
-    virtual void handleOrder(byte orderVec[], int orderVecLen) = 0;
+    virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void update() = 0;
     virtual bool hasName(String objectName);
   protected:

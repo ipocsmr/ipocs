@@ -14,6 +14,10 @@
 #include "BasicObject.h"
 #include <Servo.h>
 
+namespace IPOCS {
+  class Packet;
+}
+
 struct PointT1Data {
   byte servoPin;
 };
@@ -21,8 +25,7 @@ struct PointT1Data {
 class PointT1: public BasicObject {
   public:
     PointT1();
-    virtual byte getStatus();
-    virtual void handleOrder(byte orderVec[], int orderVecLen);
+    virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void update();
   protected:
     virtual void objectInit(byte configData[], int configDataLen);

@@ -23,7 +23,7 @@ class ObjectStore {
 
     void loadSaved();
     void addObject(BasicObject* bo);
-    void handleOrder(String objectName, byte orderVec[], long orderVecLen);
+    void handleOrder(IPOCS::Message* msg);
     void updateObjects();
   private:
     struct ObjectStoreNode {

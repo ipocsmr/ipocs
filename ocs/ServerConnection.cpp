@@ -4,6 +4,7 @@
 #include "Configuration.h"
 #include <EEPROM.h>
 #include <avr/wdt.h>
+#include "IPOCS.h"
 
 const long reconnectTime = 1000;
 
@@ -39,13 +40,15 @@ void ServerConnection::setServer(IPAddress serverIP)
   this->serverIP = serverIP;
 }
 
-void ServerConnection::println(String data)
+void ServerConnection::send(IPOCS::Message* msg)
 {
   if (!this->server.connected())
   {
     return;
   }
-  this->server.println(data);
+  uint8_t buffer[255];
+  uint8_t len = msg->serialize(buffer);
+  this->server.write(buffer, len);
 }
 
 void ServerConnection::loop()
@@ -59,7 +62,17 @@ void ServerConnection::loop()
     {
       Serial.println(" done");
       this->inputString = "";
-      this->println("unitid=" + String(Configuration::getUnitID(), 16));
+      IPOCS::Message* msg = IPOCS::Message::create();
+      msg->RXID_OBJECT = String((char)Configuration::getUnitID());
+
+      IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
+      pkt->RM_PROTOCOL_VERSION = 0x0101;
+      pkt->RXID_SITE_DATA_VERSION = "1.0";
+      msg->addPacket(pkt);
+
+      this->send(msg);
+      msg->destroy();
+      delete msg;
     }
     else
     {
@@ -69,8 +82,32 @@ void ServerConnection::loop()
     this->lastReconnect = millis();
   } else if (this->server) {
     while (this->server.available()) {
-      // get the new byte:
-      char inChar = (char)this->server.read();
+      // Read the header
+      byte RL_MESSAGE = 0;
+      int numRead = this->server.read(&RL_MESSAGE, 1);
+      if (numRead != 1)
+      {
+        // Close connection - error in reading.
+        this->server.stop();
+        return;
+      }
+      // Define the message
+      byte message[RL_MESSAGE];
+      message[0] = RL_MESSAGE;
+      // Read the rest of the message
+      numRead += this->server.read(message + 1, RL_MESSAGE - 1);
+      if (numRead != RL_MESSAGE)
+      {
+        // Close connection - error in reading.
+        this->server.stop();
+        return;
+      }
+      // Now parse it.
+      IPOCS::Message* msg = IPOCS::Message::create(message);
+      ObjectStore::getInstance().handleOrder(msg);
+      msg->destroy();
+      delete msg;
+      /*
       // add it to the inputString:
       if (inChar == 'E') {
         if (this->inputString.length() == 0)
@@ -95,6 +132,7 @@ void ServerConnection::loop()
         this->inputString = "";
       } else
         this->inputString += inChar;
+        */
     }
   }
 }

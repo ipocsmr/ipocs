@@ -33,13 +33,16 @@ void ObjectStore::updateObjects()
   }
 }
 
-void ObjectStore::handleOrder(String objectName, byte orderVec[], long orderVecLen)
+void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
-    if (node->object->hasName(objectName))
+    if (node->object->hasName(msg->RXID_OBJECT))
     {
-      node->object->handleOrder(orderVec, orderVecLen);
+      for (IPOCS::Message::PacketNode* pktNode = msg->firstPacket; pktNode != NULL; pktNode = pktNode->next)
+      {
+        node->object->handleOrder(pktNode->packet);
+      }
     }
   }
 }

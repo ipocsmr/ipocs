@@ -11,6 +11,10 @@
 
 #include <Ethernet.h>
 
+namespace IPOCS {
+  class Message;
+}
+
 class ServerConnection {
   public:
     static ServerConnection& getInstance()
@@ -23,7 +27,7 @@ class ServerConnection {
     void loop();
     void setServer(IPAddress serverIP);
 
-    void println(String data);
+    void send(IPOCS::Message* msg);
   private:
     ServerConnection();
     ServerConnection(ServerConnection const&);              // Don't Implement
