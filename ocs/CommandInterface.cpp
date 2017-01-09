@@ -9,7 +9,7 @@ const long waitAtStartTime = 4000;
 
 void CommandInterface::setup()
 {
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("To enter setup mode - press 's' within 4 seconds");
   Serial.flush();
   long startedAt = millis();
@@ -18,7 +18,7 @@ void CommandInterface::setup()
   {
     if (!Serial)
     {
-      Serial.begin(9600);
+      Serial.begin(115200);
       continue;
     }
     if (Serial.available()) {
