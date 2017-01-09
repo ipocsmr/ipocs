@@ -17,6 +17,9 @@ void Configuration::setServer(IPAddress newIP)
   {
     EEPROM.write(i, newIP[i - 8]);
   }
+#ifdef ESP8266
+  EEPROM.commit();
+#endif
 }
 
 void Configuration::getMAC(byte MAC[6])
@@ -35,6 +38,9 @@ void Configuration::setMAC(byte newMAC[6])
   {
     EEPROM.write(i, newMAC[i - 2]);
   }
+#ifdef ESP8266
+    EEPROM.commit();
+#endif
 }
 
 String Configuration::getSSID()
@@ -62,6 +68,9 @@ void Configuration::setUnitID(unsigned int unitID)
 {
   EEPROM.write(0, unitID >> 8);
   EEPROM.write(1, unitID & 0xFF);
+#ifdef ESP8266
+  EEPROM.commit();
+#endif
 }
 
 byte Configuration::getSD(byte data[], int dataLength)
@@ -84,5 +93,14 @@ void Configuration::setSD(byte data[], int dataLength)
   {
     EEPROM.write(33 + i, data[i]);
   }
+#ifdef ESP8266
+  EEPROM.commit();
+#endif
 }
 
+#ifdef ESP8266
+__attribute__((constructor))
+static void initialize_config() {
+  EEPROM.begin(512);
+}
+#endif
