@@ -125,32 +125,6 @@ void ServerConnection::loop()
       ObjectStore::getInstance().handleOrder(msg);
       msg->destroy();
       delete msg;
-      /*
-      // add it to the inputString:
-      if (inChar == 'E') {
-        if (this->inputString.length() == 0)
-          continue;
-        if (this->inputString[0] == 'P')
-        {
-          this->println("P");
-        }
-        else
-        {
-          if (this->inputString.length() == 2)
-          {
-            int objectNum = String(this->inputString[0]).toInt();
-            int orderVal = String(this->inputString[1]).toInt();
-            // Reset the input
-            if ((objectNum > 0) && (objectNum <= 4)) {
-              byte orderData[] = {orderVal};
-              ObjectStore::getInstance().handleOrder(String("Points " + String(objectNum)), orderData, 1);
-            }
-          }
-        }
-        this->inputString = "";
-      } else
-        this->inputString += inChar;
-        */
     }
   }
 }
