@@ -28,7 +28,9 @@ class Configuration {
     static void getMAC(byte MAC[6]);
     static void setMAC(byte newMAC[6]);
     static String getSSID();
+    static void setSSID(String ssid);
     static String getPassword();
+    static void setPassword(String pwd);
     static IPAddress getServer();
     static void setServer(IPAddress newIP);
     static byte getSD(byte data[], int dataLength);

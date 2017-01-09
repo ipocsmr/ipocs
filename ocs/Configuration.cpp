@@ -39,7 +39,7 @@ void Configuration::setMAC(byte newMAC[6])
     EEPROM.write(i, newMAC[i - 2]);
   }
 #ifdef ESP8266
-    EEPROM.commit();
+  EEPROM.commit();
 #endif
 }
 
@@ -47,15 +47,38 @@ String Configuration::getSSID()
 {
   byte ssid[6];
   Configuration::getMAC(ssid);
-  return String((char*)ssid);
+  String s_ssid;
+  for (int i = 0; i < 6; i++)
+    s_ssid += String((char)ssid[i]);
+  return s_ssid;
+}
+
+void Configuration::setSSID(String ssid)
+{
+  byte bssid[7];
+  ssid.getBytes(bssid, 7);
+  Configuration::setMAC(bssid);
 }
 
 String Configuration::getPassword()
 {
   String pwd;
   for (int i = 0; i < 8; i++)
-    pwd += EEPROM.read(24 + i);
+    pwd += String((char)EEPROM.read(24 + i));
   return pwd;
+}
+
+void Configuration::setPassword(String pwd)
+{
+  byte bpwd[9];
+  pwd.getBytes(bpwd, 9);
+  for (int i = 0; i < 8; i++)
+  {
+    EEPROM.write(24 + i, bpwd[i]);
+  }
+#ifdef ESP8266
+  EEPROM.commit();
+#endif
 }
 
 unsigned int Configuration::getUnitID()

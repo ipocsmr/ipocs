@@ -109,8 +109,10 @@ bool CommandInterface::handleCommand(String command)
       Serial.println("Available properties");
       Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
       Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
-      Serial.println("\tmac - MAC Address of the card. Format: XX XX XX XX XX XX");
+      Serial.println("\tmac - MAC Address of the card, or SSID if WiFi shield is present. Format: XX XX XX XX XX XX");
       Serial.println("\tdata - Site configuration data. Format: hex list separated by space.\n\tFirst byte is the length of the data.");
+      Serial.println("\tssid - SSID, must be exactly 6 chars.");
+      Serial.println("\tpwd - SSID password, must be exactly 8 chars.");
       Serial.println("");
     */
   }
@@ -132,6 +134,14 @@ bool CommandInterface::handleCommand(String command)
       byte mac[6];
       Configuration::getMAC(mac);
       this->printArray("mac", mac, 6);
+    }
+    else if (command == "pwd")
+    {
+      Serial.println("pwd = " + Configuration::getPassword());
+    }
+    else if (command == "ssid")
+    {
+      Serial.println("ssid = " + Configuration::getSSID());
     }
     else if (command == "data")
     {
@@ -169,6 +179,14 @@ bool CommandInterface::handleCommand(String command)
       }
       Configuration::setMAC(mac);
     }
+    else if (subCmd == "ssid")
+    {
+      Configuration::setSSID(command);
+    }
+    else if (subCmd == "pwd")
+    {
+      Configuration::setPassword(command);
+    }
     else if (subCmd == "data")
     {
       byte sd[200];
@@ -199,5 +217,4 @@ bool CommandInterface::handleCommand(String command)
   }
   return true;
 }
-
 
