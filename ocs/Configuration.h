@@ -11,9 +11,10 @@
  * 
  * Bytes - Usage
  * 0-1   - Unit ID
- * 2-7   - MAC address
+ * 2-7   - MAC address / SSID if wifi shield is present
  * 8-23  - IPv4 (or in future IPv6 address)
- * 24-   - Object configuration data
+ * 24-31 - SSID password (8 characters only)
+ * 32-   - Object configuration data
  */
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H

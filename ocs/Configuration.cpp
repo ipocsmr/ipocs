@@ -46,8 +46,10 @@ String Configuration::getSSID()
 
 String Configuration::getPassword()
 {
-  // TODO: Write this
-  return "";
+  String pwd;
+  for (int i = 0; i < 8; i++)
+    pwd += EEPROM.read(24 + i);
+  return pwd;
 }
 
 unsigned int Configuration::getUnitID()
@@ -64,23 +66,23 @@ void Configuration::setUnitID(unsigned int unitID)
 
 byte Configuration::getSD(byte data[], int dataLength)
 {
-  byte storedLength = EEPROM.read(24);
+  byte storedLength = EEPROM.read(32);
   // For unitialized memory, the value is 0xFF. If that occurs - return 0 and nothing will be loaded.
   if (storedLength == 0xFF)
     storedLength = 0x00;
-  for(int i = 0; i < storedLength; i++)
+  for (int i = 0; i < storedLength; i++)
   {
-    data[i] = EEPROM.read(25 + i);
+    data[i] = EEPROM.read(33 + i);
   }
   return storedLength;
 }
 
 void Configuration::setSD(byte data[], int dataLength)
 {
-  EEPROM.write(24, dataLength);
+  EEPROM.write(32, dataLength);
   for (int i = 0; i < dataLength; i++)
   {
-    EEPROM.write(25 + i, data[i]);
+    EEPROM.write(33 + i, data[i]);
   }
 }
 
