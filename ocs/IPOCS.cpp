@@ -205,7 +205,6 @@ uint8_t IPOCS::RequestStatusPacket::serializeSpecific(uint8_t buffer[])
 IPOCS::ThrowPointsPacket::ThrowPointsPacket()
 {
   this->RNID_PACKET = 10;
-  this->RQ_POINTS_COMMAND = 0;
 }
 
 IPOCS::Packet* IPOCS::ThrowPointsPacket::create()
@@ -215,7 +214,7 @@ IPOCS::Packet* IPOCS::ThrowPointsPacket::create()
 
 uint8_t IPOCS::ThrowPointsPacket::parseSpecific(uint8_t buffer[])
 {
-  this->RQ_POINTS_COMMAND = buffer[0];
+  this->RQ_POINTS_COMMAND = (ThrowPointsPacket::E_RQ_POINTS_COMMAND)buffer[0];
   return 1;
 }
 

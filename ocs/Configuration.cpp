@@ -37,6 +37,19 @@ void Configuration::setMAC(byte newMAC[6])
   }
 }
 
+String Configuration::getSSID()
+{
+  byte ssid[6];
+  Configuration::getMAC(ssid);
+  return String((char*)ssid);
+}
+
+String Configuration::getPassword()
+{
+  // TODO: Write this
+  return "";
+}
+
 unsigned int Configuration::getUnitID()
 {
   unsigned int value = (EEPROM.read(0) << 8) + EEPROM.read(1);

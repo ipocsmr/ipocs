@@ -17,7 +17,6 @@
 #include "ObjectStore.h"
 
 void setup() {
-  MCUSR = 0;
   CommandInterface::getInstance().setup();
   ServerConnection::getInstance().loadSaved();
   ObjectStore::getInstance().loadSaved();

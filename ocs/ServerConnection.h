@@ -9,8 +9,7 @@
 #ifndef SERVER_CONNECTION_H
 #define SERVER_CONNECTION_H
 
-#include <Ethernet.h>
-
+class Client;
 namespace IPOCS {
   class Message;
 }
@@ -25,7 +24,6 @@ class ServerConnection {
 
     void loadSaved();
     void loop();
-    void setServer(IPAddress serverIP);
 
     void send(IPOCS::Message* msg);
   private:
@@ -33,10 +31,8 @@ class ServerConnection {
     ServerConnection(ServerConnection const&);              // Don't Implement
     void operator=(ServerConnection const&); // Don't implement
 
-    EthernetClient server;
+    Client* server;
     long lastReconnect;
-    IPAddress serverIP;
-    String inputString;
 };
 
 #endif

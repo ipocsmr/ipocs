@@ -162,7 +162,7 @@ bool CommandInterface::handleCommand(String command)
     else if (subCmd == "mac")
     {
       byte mac[6];
-      char* pos = command.c_str();
+      char* pos = (char*)command.c_str();
       for (int i = 0; i < 6; i++)
       {
         mac[i] = strtol(pos, &pos, 16);

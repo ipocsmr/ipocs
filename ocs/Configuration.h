@@ -26,6 +26,8 @@ class Configuration {
     static void setUnitID(unsigned int unitID);
     static void getMAC(byte MAC[6]);
     static void setMAC(byte newMAC[6]);
+    static String getSSID();
+    static String getPassword();
     static IPAddress getServer();
     static void setServer(IPAddress newIP);
     static byte getSD(byte data[], int dataLength);
