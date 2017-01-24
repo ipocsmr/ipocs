@@ -55,11 +55,22 @@ void ObjectStore::loadSaved()
   int objNum = 0;
   while (sdLength > currPos)
   {
-    byte sdObjectLength = sd[currPos];
-    byte sdObjectType = sd[currPos + 1];
+    byte sdObjectType = sd[currPos];
+    String objectName;
+    for (uint8_t* firstChar = sd + 1; *firstChar != 0x00; firstChar++)
+    {
+      objectName += String((char)(*firstChar));
+    }
+    // 1 byte for object type + object length + object name + null byte
+    uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
+
+
+    byte sdObjectLength = sd[msgParsed - 1];
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
+      
       BasicObject* bo = this->functions[sdObjectType]();
-      bo->init(String("Points " + String(objNum + 1)), sd + (currPos + 2), sdObjectLength - 1);
+      
+      bo->init(objectName, sd + msgParsed, sdObjectLength - 1);
       ObjectStore::getInstance().addObject(bo);
     }
     currPos += sd[currPos] + 1;
