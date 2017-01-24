@@ -12,7 +12,7 @@ class PointsMotor {
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState() = 0;
 };
 
-typedef PointsMotor* (*initPointsMotorFunction)(unsigned char configData[]);
+typedef PointsMotor* (*initPointsMotorFunction)();
 
 
 

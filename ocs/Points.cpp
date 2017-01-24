@@ -76,7 +76,7 @@ void Points::objectInit(byte configData[], int configDataLen)
   {
     initPointsMotorFunction fun = NULL;
     PointsMotorStore::getInstance().getFunction(configDataCurrent[0], &fun);
-    PointsMotor* pointsMotor = fun(configDataCurrent);
+    PointsMotor* pointsMotor = fun();
     int consumed = pointsMotor->objectInit(configDataCurrent);
     index += consumed;
     configDataCurrent += consumed;
