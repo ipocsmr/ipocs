@@ -8,30 +8,24 @@
  * @history see the git log of the origin repository.
  * 
  */
-#ifndef POINT_T1_H
-#define POINT_T1_H
+#ifndef POINTSMOTOR_SERVO_H
+#define POINTSMOTOR_SERVO_H
 
-#include "BasicObject.h"
+#include "PointsMotor.h"
 #include <Servo.h>
+#include "IPOCS.h"
 
-namespace IPOCS {
-  class Packet;
-}
-
-struct PointT1Data {
-  byte servoPin;
-};
-
-class PointT1: public BasicObject {
+class PointsMotor_Servo: public PointsMotor {
   public:
-    PointT1();
+    PointsMotor_Servo();
     virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void update();
-  protected:
-    virtual void objectInit(byte configData[], int configDataLen);
+    virtual int objectInit(byte configData[]);
+    virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     Servo object;
-    struct PointT1Data data;
+    int posInput;
+    
     int setPos;
     int curPos;
     long lastRun;

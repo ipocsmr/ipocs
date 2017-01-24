@@ -100,7 +100,13 @@ class ThrowPointsPacket: public Packet {
 
 class PointsStatusPacket: public Packet {
   public:
-    uint8_t RQ_POINTS_STATE;
+    enum E_RQ_POINTS_STATE {
+      RIGHT = 1,
+      LEFT = 2,
+      MOVING = 3,
+      OUT_OF_CONTROL = 4
+    };    
+    E_RQ_POINTS_STATE RQ_POINTS_STATE;
     uint8_t RQ_RELEASE_STATE;
     uint16_t RT_OPERATION;
 
