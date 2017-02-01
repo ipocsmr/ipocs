@@ -14,6 +14,4 @@ class PointsMotor {
 
 typedef PointsMotor* (*initPointsMotorFunction)();
 
-
-
 #endif

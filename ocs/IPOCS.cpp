@@ -1,7 +1,7 @@
 #include "IPOCS.h"
 
 typedef IPOCS::Packet* (*PacketParserFun)();
-PacketParserFun packetParsers[] = {
+const PacketParserFun packetParsers[] = {
   IPOCS::ConnectionRequestPacket::create,
   IPOCS::ConnectionResponsePacket::create,
   NULL,

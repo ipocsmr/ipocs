@@ -6,11 +6,23 @@
 #include <stdlib.h>
 
 const long waitAtStartTime = 4000;
+const char TO_ENTER_SETUP[] = "To enter setup mode - press 's' within 4 seconds";
+const char PROMPT[] = "$> ";
+const char EQUALS[] = " = ";
+const char CMD_GET[] = "get";
+const char CMD_SET[] = "set";
+const char CMD_EXIT[] = "exit";
+const char CMD_CMD_UNITID[] = "unitid";
+const char CMD_CMD_SERVER[] = "server";
+const char CMD_CMD_MAC[] = "mac";
+const char CMD_CMD_PWD[] = "pwd";
+const char CMD_CMD_SSID[] = "ssid";
+const char CMD_CMD_DATA[] = "data";
 
 void CommandInterface::setup()
 {
   Serial.begin(115200);
-  Serial.println("To enter setup mode - press 's' within 4 seconds");
+  Serial.println(TO_ENTER_SETUP);
   Serial.flush();
   long startedAt = millis();
   unsigned int unitId = Configuration::getUnitID();
@@ -49,12 +61,12 @@ void CommandInterface::setupMode()
 {
   bool inSetupMode = true;
   bool hasPrinted = false;
-  String inString = "";
+  String inString;
   while (inSetupMode)
   {
     if (!hasPrinted)
     {
-      Serial.print("$> ");
+      Serial.print(PROMPT);
       hasPrinted = true;
     }
     if (Serial.available())
@@ -84,7 +96,7 @@ void CommandInterface::printArray(String pre, byte arr[], byte arrLen)
 
 void CommandInterface::printArray(String pre, byte arr[], byte arrLen, char divider, int base = 10)
 {
-  Serial.print(pre + " = ");
+  Serial.print(pre + String(EQUALS));
   for (int i = 0; i < arrLen; i++)
   {
     Serial.print(String(arr[i], base) + String((i != (arrLen - 1)) ? divider : ' '));
@@ -97,79 +109,60 @@ bool CommandInterface::handleCommand(String command)
   int index = command.indexOf(' ');
   String cmd = command.substring(0, index);
   command.remove(0, index + 1);
-  if (cmd == "help")
+  if (cmd == CMD_GET)
   {
-    /*
-      Serial.println("");
-      Serial.println("Available commands:");
-      Serial.println("\tget <property>");
-      Serial.println("\tset <property> <value>");
-      Serial.println("\texit");
-      Serial.println("");
-      Serial.println("Available properties");
-      Serial.println("\tunitid - Identity of this card for the GMJS OCS protocol. Range: 1-65535");
-      Serial.println("\tserver - IPv4 address to server. Format: stardard IPv4 notation");
-      Serial.println("\tmac - MAC Address of the card, or SSID if WiFi shield is present. Format: XX XX XX XX XX XX");
-      Serial.println("\tdata - Site configuration data. Format: hex list separated by space.\n\tFirst byte is the length of the data.");
-      Serial.println("\tssid - SSID, must be exactly 6 chars.");
-      Serial.println("\tpwd - SSID password, must be exactly 8 chars.");
-      Serial.println("");
-    */
-  }
-  else if (cmd == "get")
-  {
-    if (command == "unitid")
+    if (command == CMD_CMD_UNITID)
     {
       unsigned int value = Configuration::getUnitID();
-      Serial.println("unitid = " + String(value));
+      Serial.println(String(CMD_CMD_UNITID) + String(EQUALS) + String(value));
     }
-    else if (command == "server")
+    else if (command == CMD_CMD_SERVER)
     {
       IPAddress ip = Configuration::getServer();
       byte ipArr[4] = {ip[0], ip[1], ip[2], ip[3]};
-      this->printArray("server", ipArr, 4, '.', 10);
+      this->printArray(CMD_CMD_SERVER, ipArr, 4, '.', 10);
     }
-    else if (command == "mac")
+    else if (command == CMD_CMD_MAC)
     {
       byte mac[6];
       Configuration::getMAC(mac);
-      this->printArray("mac", mac, 6);
+      this->printArray(CMD_CMD_MAC, mac, 6);
     }
-    else if (command == "pwd")
+    else if (command == CMD_CMD_PWD)
     {
-      Serial.println("pwd = " + Configuration::getPassword());
+      Serial.println(String(CMD_CMD_PWD) + String(EQUALS) + Configuration::getPassword());
     }
-    else if (command == "ssid")
+    else if (command == CMD_CMD_SSID)
     {
-      Serial.println("ssid = " + Configuration::getSSID());
+      Serial.println(String(CMD_CMD_SSID) + String(EQUALS) + Configuration::getSSID());
     }
-    else if (command == "data")
+    else if (command == CMD_CMD_DATA)
     {
       byte sd[200];
       byte sdLength = Configuration::getSD(sd, 200);
-      this->printArray("data", sd, sdLength, ' ', 16);
+      this->printArray(CMD_CMD_DATA, sd, sdLength, ' ', 16);
     }
     else
     {
       Serial.println('?');
     }
   }
-  else if (cmd == "set")
+  else if (cmd == CMD_SET)
   {
     index = command.indexOf(' ');
     String subCmd = command.substring(0, index);
     command.remove(0, command.indexOf(' ') + 1);
-    if (subCmd == "unitid")
+    if (subCmd == CMD_CMD_UNITID)
     {
       Configuration::setUnitID(command.toInt());
     }
-    else if (subCmd == "server")
+    else if (subCmd == CMD_CMD_SERVER)
     {
       IPAddress ip;
       ip.fromString(command);
       Configuration::setServer(ip);
     }
-    else if (subCmd == "mac")
+    else if (subCmd == CMD_CMD_MAC)
     {
       byte mac[6];
       char* pos = (char*)command.c_str();
@@ -179,15 +172,15 @@ bool CommandInterface::handleCommand(String command)
       }
       Configuration::setMAC(mac);
     }
-    else if (subCmd == "ssid")
+    else if (subCmd == CMD_CMD_SSID)
     {
       Configuration::setSSID(command);
     }
-    else if (subCmd == "pwd")
+    else if (subCmd == CMD_CMD_PWD)
     {
       Configuration::setPassword(command);
     }
-    else if (subCmd == "data")
+    else if (subCmd == CMD_CMD_DATA)
     {
       byte sd[200];
       int sdLength = 0;
@@ -207,7 +200,7 @@ bool CommandInterface::handleCommand(String command)
       Serial.println('?');
     }
   }
-  else if (cmd == "exit")
+  else if (cmd == CMD_EXIT)
   {
     return false;
   }
