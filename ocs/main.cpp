@@ -12,6 +12,7 @@
 
 */
 
+#include <Arduino.h>
 #include "CommandInterface.h"
 #include "ServerConnection.h"
 #include "ObjectStore.h"
@@ -23,7 +24,7 @@ void setup() {
 }
 
 void loop() {
-  CommandInterface::getInstance().loop();  
+  CommandInterface::getInstance().loop();
   ServerConnection::getInstance().loop();
   ObjectStore::getInstance().updateObjects();
 }
