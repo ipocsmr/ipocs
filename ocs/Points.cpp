@@ -8,6 +8,7 @@
 
 Points::Points() {
   this->lastSentState = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
+  this->first = NULL;
 }
 
 void Points::handleOrder(IPOCS::Packet* basePacket)
@@ -43,7 +44,7 @@ void Points::update()
     currentNode->motor->update();
   }
   // TODO: Don't react on status changes instantly.
-  
+
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE allState = this->first->motor->getState();
   bool allSame = true;
   for (PointsMotorNode* currentNode = this->first; currentNode != NULL && allSame; currentNode = currentNode->next)
