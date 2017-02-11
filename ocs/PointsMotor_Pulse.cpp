@@ -49,7 +49,7 @@ void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
   }
 }
 
-void PointsMotor_Pulse::update()
+void PointsMotor_Pulse::loop()
 {
   if (this->lastOrder != 0)
   {

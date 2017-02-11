@@ -24,7 +24,7 @@ void WiFiConnect()
   {
     String ssid = Configuration::getSSID();
     String pwd = Configuration::getPassword();
-    WiFi.begin(ssid.c_str(), pwd.c_str());
+    WiFi.begin((char*)ssid.c_str(), pwd.c_str());
     while (WiFi.status() != WL_CONNECTED) {
       delay(500);
     }

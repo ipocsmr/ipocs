@@ -1,10 +1,10 @@
 /*****************
  * PointMotor Pule - definition file.
- * 
+ *
  * @author Fredrik Elestedt
  * @date
  * @history see the git log of the origin repository.
- * 
+ *
  */
 #ifndef POINTSMOTOR_PULSE_H
 #define POINTSMOTOR_PULSE_H
@@ -23,10 +23,9 @@ class PointsMotor_Pulse: public PointsMotor {
     int throwLeftOutput;
     int throwRightOutput;
     int posInput;
-    
+
     long lastOrder;
     IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND lastOrderState;
 };
 
 #endif
-

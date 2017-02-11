@@ -1,12 +1,12 @@
 /*****************
  * Point - Type 1 - definition file.
- * 
+ *
  * This file defines how to operate the Point Type 1.
- * 
+ *
  * @author Fredrik Elestedt
  * @date
  * @history see the git log of the origin repository.
- * 
+ *
  */
 #ifndef POINTSMOTOR_SERVO_H
 #define POINTSMOTOR_SERVO_H
@@ -25,11 +25,10 @@ class PointsMotor_Servo: public PointsMotor {
   private:
     Servo object;
     int posInput;
-    
+
     int setPos;
     int curPos;
     long lastRun;
 };
 
 #endif
-
