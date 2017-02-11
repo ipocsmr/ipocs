@@ -16,7 +16,7 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
   if (basePacket->RNID_PACKET == 10)
   {
     if (this->frogOutput != 0)
-      digitalWrite(this->frogOutput, LOW);
+      digitalWrite(this->frogOutput - 1, LOW);
     for (PointsMotorNode* currentNode = this->first; currentNode != NULL; currentNode = currentNode->next)
     {
       currentNode->motor->handleOrder(basePacket);
@@ -51,7 +51,7 @@ void Points::loop()
   }
   if (allSame && this->lastSentState != allState) {
     if (this->frogOutput != 0 && allState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT)
-      digitalWrite(this->frogOutput, HIGH);
+      digitalWrite(this->frogOutput - 1, HIGH);
 
     IPOCS::Message* msg = IPOCS::Message::create();
     msg->RXID_OBJECT = this->objectName;
@@ -69,7 +69,7 @@ void Points::objectInit(byte configData[], int configDataLen)
 {
   this->frogOutput = configData[0];
   if (this->frogOutput != 0)
-    pinMode(this->throwLeftOutput, OUTPUT);
+    pinMode(this->frogOutput - 1, OUTPUT);
   byte* configDataCurrent = configData + 1;
   for (int index = 1; index < configDataLen; )
   {
