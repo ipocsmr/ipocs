@@ -91,10 +91,9 @@ void ServerConnection::loop()
       IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
       pkt->RM_PROTOCOL_VERSION = 0x0101;
       pkt->RXID_SITE_DATA_VERSION = "1.0";
-      msg->addPacket(pkt);
+      msg->setPacket(pkt);
 
       this->send(msg);
-      msg->destroy();
       delete msg;
     }
     else
@@ -127,9 +126,7 @@ void ServerConnection::loop()
       // Now parse it.
       IPOCS::Message* msg = IPOCS::Message::create(message);
       ObjectStore::getInstance().handleOrder(msg);
-      msg->destroy();
       delete msg;
     }
   }
 }
-

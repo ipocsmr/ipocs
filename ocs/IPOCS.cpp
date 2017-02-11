@@ -20,8 +20,7 @@ const PacketParserFun packetParsers[] = {
 IPOCS::Message::Message()
 {
   this->RL_MESSAGE = 0;
-  this->firstPacket = NULL;
-  this->lastPacket = NULL;
+  this->packet = NULL;
 }
 
 IPOCS::Message* IPOCS::Message::create()
@@ -41,12 +40,11 @@ IPOCS::Message* IPOCS::Message::create(uint8_t buffer[])
   // 1 byte for message length + object name + null byte
   uint8_t msgParsed = 1 + msg->RXID_OBJECT.length() + 1;
   // Use pointer arithmetics to read all packets in buffer.
-  for (uint8_t* pktBuf = buffer + msgParsed; pktBuf < (buffer + msg->RL_MESSAGE); ) {
-    Packet* pkt = NULL;
-    uint8_t readBytes = IPOCS::Packet::create(&pkt, pktBuf);
-    msg->addPacket(pkt);
-    pktBuf += readBytes;
-  }
+  uint8_t* pktBuf = buffer + msgParsed;
+  Packet* pkt = NULL;
+  uint8_t readBytes = IPOCS::Packet::create(&pkt, pktBuf);
+  msg->setPacket(pkt);
+  pktBuf += readBytes;
   return msg;
 }
 
@@ -54,39 +52,19 @@ uint8_t IPOCS::Message::serialize(uint8_t buffer[])
 {
   this->RL_MESSAGE = 1 + this->RXID_OBJECT.length() + 1;
   this->RXID_OBJECT.getBytes(buffer + 1, this->RXID_OBJECT.length() + 1);
-
-  for (PacketNode* pktN = this->firstPacket; pktN != NULL; pktN = pktN->next)
-  {
-    this->RL_MESSAGE += pktN->packet->serialize(buffer + this->RL_MESSAGE);
-  }
+  this->RL_MESSAGE += this->packet->serialize(buffer + this->RL_MESSAGE);
   buffer[0] = this->RL_MESSAGE;
   return this->RL_MESSAGE;
 }
 
-void IPOCS::Message::addPacket(Packet* pkt)
+void IPOCS::Message::setPacket(Packet* pkt)
 {
-  PacketNode* newNode = new PacketNode();
-  newNode->next = NULL;
-  newNode->packet = pkt;
-  if (this->firstPacket == NULL)
-  {
-    this->firstPacket = newNode;
-  } else {
-    this->lastPacket->next = newNode;
-  }
-  this->lastPacket = newNode;
-  this->numPackets++;
+  this->packet = pkt;
 }
 
-void IPOCS::Message::destroy()
+IPOCS::Message::~Message()
 {
-  for (PacketNode* node = this->firstPacket; node != NULL; )
-  {
-    PacketNode* next = node->next;
-    delete node->packet;
-    delete node;
-    node = next;
-  }
+  delete (this->packet);
 }
 
 /*******************************************************************
@@ -256,4 +234,3 @@ uint8_t IPOCS::PointsStatusPacket::serializeSpecific(uint8_t buffer[])
   buffer[3] = this->RT_OPERATION & 0xFF;
   return 4;
 }
-

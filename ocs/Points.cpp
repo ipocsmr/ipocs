@@ -27,10 +27,8 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
 
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = this->lastSentState;
-    msg->addPacket(pkt);
-
+    msg->setPacket(pkt);
     ServerConnection::getInstance().send(msg);
-    msg->destroy();
     delete msg;
   } else {
     // TODO: Send alarm or something about invalid packet type.
@@ -60,10 +58,8 @@ void Points::update()
 
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = allState;
-    msg->addPacket(pkt);
-
+    msg->setPacket(pkt);
     ServerConnection::getInstance().send(msg);
-    msg->destroy();
     delete msg;
     this->lastSentState = allState;
   }

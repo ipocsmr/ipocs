@@ -15,6 +15,8 @@ class Packet {
 
     static uint8_t create(Packet** pkt, uint8_t buffer[]);
     uint8_t serialize(uint8_t buffer[]);
+
+    virtual ~Packet() {}
   protected:
     virtual uint8_t parseSpecific(uint8_t buffer[]) = 0;
     virtual uint8_t serializeSpecific(uint8_t buffer[]) = 0;
@@ -23,28 +25,20 @@ class Packet {
 
 class Message {
   public:
-    class PacketNode {
-      public:
-        PacketNode* next;
-        Packet* packet;
-    };
-
     uint8_t RL_MESSAGE;
     String RXID_OBJECT;
-    uint8_t numPackets;
+
+    ~Message();
 
     static Message* create();
     static Message* create(uint8_t buffer[]);
     uint8_t serialize(uint8_t buffer[]);
-    void destroy();
-    
-    void addPacket(Packet* pkt);
-    PacketNode* firstPacket;
-  private:
-    
-    Message();
 
-    PacketNode* lastPacket;
+    void setPacket(Packet* pkt);
+    Packet* packet;
+
+  private:
+    Message();
 };
 
 class ConnectionRequestPacket: public Packet {
@@ -105,7 +99,7 @@ class PointsStatusPacket: public Packet {
       LEFT = 2,
       MOVING = 3,
       OUT_OF_CONTROL = 4
-    };    
+    };
     E_RQ_POINTS_STATE RQ_POINTS_STATE;
     uint8_t RQ_RELEASE_STATE;
     uint16_t RT_OPERATION;

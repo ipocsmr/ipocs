@@ -39,10 +39,7 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
   {
     if (node->object->hasName(msg->RXID_OBJECT))
     {
-      for (IPOCS::Message::PacketNode* pktNode = msg->firstPacket; pktNode != NULL; pktNode = pktNode->next)
-      {
-        node->object->handleOrder(pktNode->packet);
-      }
+      node->object->handleOrder(msg->packet);
     }
   }
 }
@@ -67,9 +64,9 @@ void ObjectStore::loadSaved()
 
     byte sdObjectLength = sd[msgParsed - 1];
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
-      
+
       BasicObject* bo = this->functions[sdObjectType]();
-      
+
       bo->init(objectName, sd + msgParsed, sdObjectLength - 1);
       ObjectStore::getInstance().addObject(bo);
     }
@@ -82,4 +79,3 @@ void ObjectStore::registerType(int typeId, initObjectFunction fun)
 {
   this->functions[typeId] = fun;
 }
-
