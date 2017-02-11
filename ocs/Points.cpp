@@ -68,6 +68,8 @@ void Points::loop()
 void Points::objectInit(byte configData[], int configDataLen)
 {
   this->frogOutput = configData[0];
+  if (this->frogOutput != 0)
+    pinMode(this->throwLeftOutput, OUTPUT);
   byte* configDataCurrent = configData + 1;
   for (int index = 1; index < configDataLen; )
   {

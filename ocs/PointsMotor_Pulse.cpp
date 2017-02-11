@@ -26,6 +26,8 @@ int PointsMotor_Pulse::objectInit(byte configData[])
 
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrder = 0;
+  pinMode(this->throwLeftOutput, OUTPUT);
+  pinMode(this->throwRightOutput, OUTPUT);
   digitalWrite(this->throwLeftOutput, LOW);
   digitalWrite(this->throwRightOutput, LOW);
   return 4;
