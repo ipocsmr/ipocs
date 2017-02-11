@@ -19,12 +19,12 @@
 
 void setup() {
   CommandInterface::getInstance().setup();
-  ServerConnection::getInstance().loadSaved();
-  ObjectStore::getInstance().loadSaved();
+  ServerConnection::getInstance().setup();
+  ObjectStore::getInstance().setup();
 }
 
 void loop() {
   CommandInterface::getInstance().loop();
   ServerConnection::getInstance().loop();
-  ObjectStore::getInstance().updateObjects();
+  ObjectStore::getInstance().loop();
 }

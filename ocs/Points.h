@@ -20,7 +20,7 @@ class Points: public BasicObject {
   public:
     Points();
     virtual void handleOrder(IPOCS::Packet* basePacket);
-    virtual void update();
+    virtual void loop();
   protected:
     virtual void objectInit(byte configData[], int configDataLen);
   private:

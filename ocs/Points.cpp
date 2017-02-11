@@ -35,11 +35,11 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
   }
 }
 
-void Points::update()
+void Points::loop()
 {
   for (PointsMotorNode* currentNode = this->first; currentNode != NULL; currentNode = currentNode->next)
   {
-    currentNode->motor->update();
+    currentNode->motor->loop();
   }
   // TODO: Don't react on status changes instantly.
 

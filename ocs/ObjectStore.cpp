@@ -25,11 +25,11 @@ void ObjectStore::addObject(BasicObject* bo)
   this->basicObjectCount++;
 }
 
-void ObjectStore::updateObjects()
+void ObjectStore::loop()
 {
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
-    node->object->update();
+    node->object->loop();
   }
 }
 
@@ -44,7 +44,7 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
   }
 }
 
-void ObjectStore::loadSaved()
+void ObjectStore::setup()
 {
   byte sd[200];
   byte sdLength = Configuration::getSD(sd, 200);

@@ -47,7 +47,7 @@ void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
   }
 }
 
-void PointsMotor_Servo::update()
+void PointsMotor_Servo::loop()
 {
   if (millis() - this->lastRun > pointStepTime) {
     this->lastRun = millis();
@@ -82,7 +82,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
     } else if (posValue < StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     }
-  } 
+  }
   return pos;
 }
 

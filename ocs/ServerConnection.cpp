@@ -55,7 +55,7 @@ ServerConnection::ServerConnection()
   }
 }
 
-void ServerConnection::loadSaved()
+void ServerConnection::setup()
 {
 }
 

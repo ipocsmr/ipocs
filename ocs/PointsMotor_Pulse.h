@@ -16,7 +16,7 @@ class PointsMotor_Pulse: public PointsMotor {
   public:
     PointsMotor_Pulse();
     virtual void handleOrder(IPOCS::Packet* basePacket);
-    virtual void update();
+    virtual void loop();
     virtual int objectInit(byte configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:

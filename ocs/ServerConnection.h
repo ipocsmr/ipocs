@@ -22,7 +22,7 @@ class ServerConnection {
       return instance;
     }
 
-    void loadSaved();
+    void setup();
     void loop();
 
     void send(IPOCS::Message* msg);
@@ -36,4 +36,3 @@ class ServerConnection {
 };
 
 #endif
-

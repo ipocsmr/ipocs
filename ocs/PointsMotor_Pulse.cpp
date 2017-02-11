@@ -78,7 +78,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
 {
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
   if (this->posInput >= NO_POSITION_INPUT) {
-    int timeToKeepActive = (this->posInput - NO_POSITION_INPUT) * 100;
+    unsigned int timeToKeepActive = (this->posInput - NO_POSITION_INPUT) * 100U;
     if (millis() - this->lastOrder > timeToKeepActive)
     {
       switch (this->lastOrderState)
@@ -102,7 +102,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
     } else if (posValue < StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     }
-  } 
+  }
   return pos;
 }
 

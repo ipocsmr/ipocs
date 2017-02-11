@@ -20,11 +20,9 @@ class ObjectStore {
     }
 
     void registerType(int typeId, initObjectFunction fun);
-
-    void loadSaved();
-    void addObject(BasicObject* bo);
     void handleOrder(IPOCS::Message* msg);
-    void updateObjects();
+    void setup();
+    void loop();
   private:
     struct ObjectStoreNode {
       ObjectStoreNode* prev;
@@ -33,14 +31,14 @@ class ObjectStore {
     };
 
     initObjectFunction functions[10];
-    ObjectStore();
-    ObjectStore(ObjectStore const&);              // Don't Implement
-    void operator=(ObjectStore const&); // Don't implement
-
     struct ObjectStoreNode* first;
     struct ObjectStoreNode* last;
     long basicObjectCount;
+
+    ObjectStore();
+    ObjectStore(ObjectStore const&);              // Don't Implement
+    void operator=(ObjectStore const&); // Don't implement
+    void addObject(BasicObject* bo);
 };
 
 #endif
-
