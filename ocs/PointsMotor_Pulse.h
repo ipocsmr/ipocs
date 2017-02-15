@@ -24,7 +24,7 @@ class PointsMotor_Pulse: public PointsMotor {
     int throwRightOutput;
     int posInput;
 
-    long lastOrder;
+    unsigned long lastOrderMillis;
     IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND lastOrderState;
 };
 

@@ -22,10 +22,12 @@ int PointsMotor_Pulse::objectInit(byte configData[])
 {
   this->throwLeftOutput = configData[1] - 1;
   this->throwRightOutput = configData[2] - 1;
-  this->posInput = configData[3] - 1;
+  this->posInput = configData[3];
+  if (this->posInput != 0)
+    this->posInput--;
 
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
-  this->lastOrder = 0;
+  this->lastOrderMillis = 0;
   pinMode(this->throwLeftOutput, OUTPUT);
   pinMode(this->throwRightOutput, OUTPUT);
   digitalWrite(this->throwLeftOutput, LOW);
@@ -38,40 +40,38 @@ void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
   if (basePacket->RNID_PACKET == 10)
   {
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
-    this->lastOrder = millis();
+    this->lastOrderMillis = millis();
     this->lastOrderState = packet->RQ_POINTS_COMMAND;
+    unsigned int pinToSet = 0;
     switch (packet->RQ_POINTS_COMMAND)
     {
-      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: digitalWrite(throwLeftOutput, HIGH); break;
-      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: digitalWrite(throwRightOutput, HIGH); break;
+      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: pinToSet = this->throwLeftOutput; break;
+      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: pinToSet = this->throwRightOutput; break;
       default:
         // TODO: Send error about invalid value
+        Serial.println("Unknown command");
         break;
     }
+    digitalWrite(pinToSet, HIGH);
   }
 }
 
 void PointsMotor_Pulse::loop()
 {
-  if (this->lastOrder != 0)
+  if (this->lastOrderMillis == 0)
+    return;
+  IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE currentState = this->getState();
+  bool bSetLow = ((this->posInput >= NO_POSITION_INPUT) &&
+    (currentState != IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING)) ||
+    (currentState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING);
+  if (bSetLow)
   {
-    if (this->posInput >= NO_POSITION_INPUT)
+    unsigned int timeToKeepActive =  500U;
+    if (millis() - this->lastOrderMillis > timeToKeepActive)
     {
-      if (this->getState() != IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING)
-      {
-        digitalWrite(this->throwLeftOutput, LOW);
-        digitalWrite(this->throwRightOutput, LOW);
-        this->lastOrder = 0;
-      }
-    }
-    else
-    {
-      if (this->getState() == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING)
-      {
-        digitalWrite(this->throwLeftOutput, LOW);
-        digitalWrite(this->throwRightOutput, LOW);
-        this->lastOrder = 0;
-      }
+      digitalWrite(this->throwLeftOutput, LOW);
+      digitalWrite(this->throwRightOutput, LOW);
+      this->lastOrderMillis = 0;
     }
   }
 }
@@ -80,8 +80,8 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
 {
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
   if (this->posInput >= NO_POSITION_INPUT) {
-    unsigned int timeToKeepActive = (this->posInput - NO_POSITION_INPUT) * 100U;
-    if (millis() - this->lastOrder > timeToKeepActive)
+    unsigned int timeToKeepActive =  500U;
+    if (millis() - this->lastOrderMillis > timeToKeepActive)
     {
       switch (this->lastOrderState)
       {
@@ -101,7 +101,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
     } else if (posValue < StateMoving) {
       // TODO Add 10s timeout
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
-    } else if (posValue < StateRight) {
+    } else if (posValue <= StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     }
   }
