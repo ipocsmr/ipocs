@@ -53,6 +53,7 @@ ServerConnection::ServerConnection()
     this->server = new WiFiClient();
     WiFiConnect();
   }
+  udp.begin(10000);
 }
 
 void ServerConnection::setup()
@@ -80,26 +81,42 @@ void ServerConnection::loop()
     }
     Serial.print("(Re)connecting...");
     this->server->stop();
-    IPAddress ip = Configuration::getServer();
-    byte returnVal = this->server->connect(ip, 9999);
-    if (returnVal == 1)
+
+    int packetSize = this->udp.parsePacket();
+    if (packetSize == 0)
     {
-      Serial.println(" done");
-      IPOCS::Message* msg = IPOCS::Message::create();
-      msg->RXID_OBJECT = String((char)Configuration::getUnitID());
-
-      IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
-      pkt->RM_PROTOCOL_VERSION = 0x0101;
-      pkt->RXID_SITE_DATA_VERSION = "1.0";
-      msg->setPacket(pkt);
-
-      this->send(msg);
-      delete msg;
+      this->udp.beginPacket("255.255.255.255", 10000);
+      this->udp.write("get server");
+      this->udp.endPacket();
+      Serial.println(" sent UDP.");
+      Serial.flush();
     }
     else
     {
-      Serial.print(String(' ') + String(returnVal));
-      Serial.println(" failed");
+      char packetBuffer[40];
+      this->udp.read(packetBuffer, 40);
+
+      IPAddress ip(packetBuffer[0], packetBuffer[1], packetBuffer[2], packetBuffer[3]);
+      int port = (packetBuffer[4] << 8) + packetBuffer[5];
+      byte returnVal = this->server->connect(ip, port);
+      if (returnVal == 1)
+      {
+        Serial.println(" done");
+        IPOCS::Message* msg = IPOCS::Message::create();
+        msg->RXID_OBJECT = String((char)Configuration::getUnitID());
+        IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
+        pkt->RM_PROTOCOL_VERSION = 0x0101;
+        pkt->RXID_SITE_DATA_VERSION = "1.0";
+        msg->setPacket(pkt);
+
+        this->send(msg);
+        delete msg;
+      }
+      else
+      {
+        Serial.print(String(' ') + String(returnVal));
+        Serial.println(" failed");
+      }
     }
   } else if (*this->server) {
     while (this->server->available()) {

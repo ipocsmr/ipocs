@@ -9,6 +9,8 @@
 #ifndef SERVER_CONNECTION_H
 #define SERVER_CONNECTION_H
 
+#include <EthernetUdp.h>
+
 class Client;
 namespace IPOCS {
   class Message;
@@ -33,6 +35,7 @@ class ServerConnection {
 
     Client* server;
     long lastReconnect;
+    EthernetUDP udp;
 };
 
 #endif
