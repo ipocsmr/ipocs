@@ -13,7 +13,6 @@ const char CMD_GET[] = "get";
 const char CMD_SET[] = "set";
 const char CMD_EXIT[] = "exit";
 const char CMD_CMD_UNITID[] = "unitid";
-const char CMD_CMD_SERVER[] = "server";
 const char CMD_CMD_MAC[] = "mac";
 const char CMD_CMD_PWD[] = "pwd";
 const char CMD_CMD_SSID[] = "ssid";
@@ -37,7 +36,7 @@ void CommandInterface::setup()
       char inChar = Serial.read();
       if (inChar == 's' || inChar == 'S' || unitId == 0xFFFF) {
         while (Serial.available()) {
-          char inChar = Serial.read();
+          inChar = Serial.read();
         }
         this->setupMode();
         break;
@@ -116,12 +115,6 @@ bool CommandInterface::handleCommand(String command)
       unsigned int value = Configuration::getUnitID();
       Serial.println(String(CMD_CMD_UNITID) + String(EQUALS) + String(value));
     }
-    else if (command == CMD_CMD_SERVER)
-    {
-      IPAddress ip = Configuration::getServer();
-      byte ipArr[4] = {ip[0], ip[1], ip[2], ip[3]};
-      this->printArray(CMD_CMD_SERVER, ipArr, 4, '.', 10);
-    }
     else if (command == CMD_CMD_MAC)
     {
       byte mac[6];
@@ -155,12 +148,6 @@ bool CommandInterface::handleCommand(String command)
     if (subCmd == CMD_CMD_UNITID)
     {
       Configuration::setUnitID(command.toInt());
-    }
-    else if (subCmd == CMD_CMD_SERVER)
-    {
-      IPAddress ip;
-      ip.fromString(command);
-      Configuration::setServer(ip);
     }
     else if (subCmd == CMD_CMD_MAC)
     {
@@ -210,4 +197,3 @@ bool CommandInterface::handleCommand(String command)
   }
   return true;
 }
-

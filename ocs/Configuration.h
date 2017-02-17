@@ -1,14 +1,14 @@
 /*****************
  * Configuration - definition file.
- * 
+ *
  * Handles memory storage
- * 
+ *
  * @author Fredrik Elestedt
  * @date
  * @history see the git log of the origin repository.
- * 
+ *
  * Storage usage:
- * 
+ *
  * Bytes - Usage
  * 0-1   - Unit ID
  * 2-7   - MAC address / SSID if wifi shield is present
@@ -31,11 +31,8 @@ class Configuration {
     static void setSSID(String ssid);
     static String getPassword();
     static void setPassword(String pwd);
-    static IPAddress getServer();
-    static void setServer(IPAddress newIP);
     static byte getSD(byte data[], int dataLength);
     static void setSD(byte data[], int dataLength);
 };
 
 #endif
-

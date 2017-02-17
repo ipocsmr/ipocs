@@ -2,26 +2,6 @@
 
 #include <EEPROM.h>
 
-IPAddress Configuration::getServer()
-{
-  byte b1 = EEPROM.read(8);
-  byte b2 = EEPROM.read(9);
-  byte b3 = EEPROM.read(10);
-  byte b4 = EEPROM.read(11);
-  return IPAddress(b1, b2, b3, b4);
-}
-
-void Configuration::setServer(IPAddress newIP)
-{
-  for (int i = 8; i < 12; i++)
-  {
-    EEPROM.write(i, newIP[i - 8]);
-  }
-#ifdef ESP8266
-  EEPROM.commit();
-#endif
-}
-
 void Configuration::getMAC(byte MAC[6])
 {
   MAC[0] = EEPROM.read(2);
