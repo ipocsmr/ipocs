@@ -11,6 +11,10 @@
 
 #include "BasicObject.h"
 
+namespace IPOCS {
+  class Message;
+};
+
 class ObjectStore {
   public:
     static ObjectStore& getInstance()

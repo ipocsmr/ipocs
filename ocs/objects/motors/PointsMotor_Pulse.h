@@ -10,14 +10,15 @@
 #define POINTSMOTOR_PULSE_H
 
 #include "PointsMotor.h"
-#include "../../IPOCS.h"
+#include "../../IPOCS/Packets/PointsStatusPacket.h"
+#include "../../IPOCS/Packets/ThrowPointsPacket.h"
 
 class PointsMotor_Pulse: public PointsMotor {
   public:
     PointsMotor_Pulse();
     virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void loop();
-    virtual int objectInit(byte configData[]);
+    virtual int objectInit(uint8_t configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     int throwLeftOutput;

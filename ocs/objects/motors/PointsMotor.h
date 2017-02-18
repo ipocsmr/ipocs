@@ -2,7 +2,7 @@
 #ifndef POINTSMOTOR_H
 #define POINTSMOTOR_H
 
-#include "../../IPOCS.h"
+#include "../../IPOCS/Packets/PointsStatusPacket.h"
 
 class PointsMotor {
   public:

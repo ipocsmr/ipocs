@@ -11,7 +11,10 @@
 #define BASICOBJECT_H
 
 #include <SPI.h>
-#include "IPOCS.h"
+
+namespace IPOCS {
+  class Packet;
+}
 
 class BasicObject {
   public:

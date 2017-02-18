@@ -2,6 +2,8 @@
 #include "ObjectStore.h"
 #include "Configuration.h"
 #include "ServerConnection.h"
+#include "IPOCS/Message.h"
+#include "IPOCS/Packets/ApplicationDataPacket.h"
 
 ObjectStore::ObjectStore()
 {

@@ -12,7 +12,7 @@
 #define POINTS_H
 
 #include "../BasicObject.h"
-#include "../IPOCS.h"
+#include "../IPOCS/Packets/PointsStatusPacket.h"
 
 class PointsMotor;
 

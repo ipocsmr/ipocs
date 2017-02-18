@@ -4,6 +4,7 @@
 #include "motors/PointsMotor.h"
 #include "motors/PointsMotorStore.h"
 #include "../ServerConnection.h"
+#include "../IPOCS/Message.h"
 
 Points::Points() {
   this->lastSentState = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;

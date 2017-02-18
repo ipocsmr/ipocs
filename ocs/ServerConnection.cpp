@@ -9,7 +9,8 @@
 #include <WiFi.h>
 #endif
 #include <Ethernet.h>
-#include "IPOCS.h"
+#include "IPOCS/Message.h"
+#include "IPOCS/Packets/ConnectionRequestPacket.h"
 
 const long reconnectTime = 1000;
 
