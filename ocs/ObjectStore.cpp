@@ -53,16 +53,15 @@ void ObjectStore::setup()
   while (sdLength > currPos)
   {
     byte sdObjectType = sd[currPos];
+    byte sdObjectLength = sd[currPos + 1];
     String objectName;
-    for (uint8_t* firstChar = sd + 1; *firstChar != 0x00; firstChar++)
+    for (uint8_t* firstChar = sd + 2; *firstChar != 0x00; firstChar++)
     {
       objectName += String((char)(*firstChar));
     }
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
 
-
-    byte sdObjectLength = sd[msgParsed - 1];
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
 
       BasicObject* bo = this->functions[sdObjectType]();
