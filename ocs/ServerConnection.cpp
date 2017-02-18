@@ -102,7 +102,12 @@ void ServerConnection::loop()
         msg->RXID_OBJECT = String((char)Configuration::getUnitID());
         IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
         pkt->RM_PROTOCOL_VERSION = 0x0101;
-        pkt->RXID_SITE_DATA_VERSION = "1.0";
+        char sdVersion[10];
+        sprintf(sdVersion, "%04X", Configuration::getSiteDataCrc());
+        pkt->RXID_SITE_DATA_VERSION = String(sdVersion);
+        Serial.println(String(Configuration::getSiteDataCrc()) + " = " + pkt->RXID_SITE_DATA_VERSION);
+        Serial.println(String(pkt->RXID_SITE_DATA_VERSION.length()));
+        Serial.flush();
         msg->setPacket(pkt);
 
         this->send(msg);
@@ -142,4 +147,8 @@ void ServerConnection::loop()
       delete msg;
     }
   }
+}
+
+void ServerConnection::stop() {
+  this->server->stop();
 }

@@ -6,7 +6,7 @@ const PacketParserFun packetParsers[] = {
   IPOCS::ConnectionResponsePacket::create,
   NULL,
   NULL,
-  NULL,
+  IPOCS::ApplicationDataPacket::ApplicationDataPacket::create,
   NULL,
   IPOCS::RequestStatusPacket::create,
   NULL,
@@ -152,6 +152,32 @@ uint8_t IPOCS::ConnectionResponsePacket::serializeSpecific(uint8_t buffer[])
   buffer[0] = this->RM_PROTOCOL_VERSION >> 8;
   buffer[1] = this->RM_PROTOCOL_VERSION & 0xFF;
   return 2;
+}
+
+/*******************************************************************
+ *  ApplicationDataPacket
+ */
+IPOCS::ApplicationDataPacket::ApplicationDataPacket()
+{
+  this->RNID_PACKET = 5;
+  this->RNID_XUSER = 0;
+  memset(this->data, 0x00, 100);
+}
+
+IPOCS::Packet* IPOCS::ApplicationDataPacket::create()
+{
+  return new IPOCS::ApplicationDataPacket();
+}
+
+uint8_t IPOCS::ApplicationDataPacket::parseSpecific(uint8_t buffer[])
+{
+  this->RNID_XUSER = (buffer[0] << 8) + buffer[1];
+  uint8_t remaining = this->RL_PACKET - 2 - 3;
+  for (uint8_t i = 0; i < remaining; i++)
+  {
+    this->data[i] = buffer[2 + i];
+  }
+  return this->RL_PACKET - 3;
 }
 
 /*******************************************************************

@@ -26,6 +26,7 @@ class ServerConnection {
 
     void setup();
     void loop();
+    void stop();
 
     void send(IPOCS::Message* msg);
   private:

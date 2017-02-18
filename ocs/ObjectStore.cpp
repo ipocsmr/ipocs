@@ -1,6 +1,7 @@
 
 #include "ObjectStore.h"
 #include "Configuration.h"
+#include "ServerConnection.h"
 
 ObjectStore::ObjectStore()
 {
@@ -35,11 +36,40 @@ void ObjectStore::loop()
 
 void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
-  for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
+  if (msg->RXID_OBJECT == String((char)Configuration::getUnitID()))
   {
-    if (node->object->hasName(msg->RXID_OBJECT))
+    Serial.println("Message to board " + String(msg->packet->RNID_PACKET));
+    Serial.flush();
+      if (msg->packet->RNID_PACKET == 5) {
+        Serial.println("Set application data");
+        Serial.flush();
+
+        IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
+        uint8_t dataLength = dataPkt->RL_PACKET - 5;
+
+        uint8_t* arr = dataPkt->data;
+        int arrLen = dataLength;
+        for (int i = 0; i < arrLen; i++)
+        {
+          Serial.print(String(arr[i], 16) + String(' '));
+        }
+        Serial.println();
+
+        Configuration::setSD(dataPkt->data, dataLength);
+        ServerConnection::getInstance().stop();
+        delay(1000);
+        ipocsResetFunc f = 0;
+        f();
+      }
+  }
+  else
+  {
+    for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
     {
-      node->object->handleOrder(msg->packet);
+      if (node->object->hasName(msg->RXID_OBJECT))
+      {
+        node->object->handleOrder(msg->packet);
+      }
     }
   }
 }
@@ -49,7 +79,14 @@ void ObjectStore::setup()
   byte sd[200];
   byte sdLength = Configuration::getSD(sd, 200);
   byte currPos = 0;
-  int objNum = 0;
+  //int objNum = 0;
+  if (!Configuration::verifyCrc()) {
+    Serial.println("Checksum failed");
+    Serial.flush();
+    return;
+  }
+  Serial.println("sdLength: " + String(sdLength));
+
   while (sdLength > currPos)
   {
     byte sdObjectType = sd[currPos];
@@ -59,19 +96,27 @@ void ObjectStore::setup()
     {
       objectName += String((char)(*firstChar));
     }
+    Serial.println(objectName);
+    Serial.flush();
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
+
+    Serial.println("Parsed: " + String(msgParsed));
+    Serial.println("Object Type" + String(sdObjectType));
+    Serial.flush();
 
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
 
       BasicObject* bo = this->functions[sdObjectType]();
 
-      bo->init(objectName, sd + msgParsed, sdObjectLength - 1);
+      bo->init(objectName, sd + msgParsed, sdObjectLength - msgParsed);
       ObjectStore::getInstance().addObject(bo);
     }
-    currPos += sd[currPos] + 1;
-    objNum++;
+    currPos += sdObjectLength + 1;
+    Serial.println("currPos: " + String(currPos));
+    //objNum++;
   }
+  Serial.println("Loading done");
 }
 
 void ObjectStore::registerType(int typeId, initObjectFunction fun)
