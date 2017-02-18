@@ -11,8 +11,8 @@
 #ifndef POINTS_H
 #define POINTS_H
 
-#include "BasicObject.h"
-#include "IPOCS.h"
+#include "../BasicObject.h"
+#include "../IPOCS.h"
 
 class PointsMotor;
 

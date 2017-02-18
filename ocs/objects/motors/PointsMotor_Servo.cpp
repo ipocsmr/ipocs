@@ -2,8 +2,7 @@
 
 #include "PointsMotorStore.h"
 #include "PointsMotor_Servo.h"
-#include "ServerConnection.h"
-#include "IPOCS.h"
+#include "../../ServerConnection.h"
 
 const int servoRightVal = 20;
 const int servoLeftVal = 150;

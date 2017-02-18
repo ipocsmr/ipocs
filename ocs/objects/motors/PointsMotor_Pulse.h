@@ -10,7 +10,7 @@
 #define POINTSMOTOR_PULSE_H
 
 #include "PointsMotor.h"
-#include "IPOCS.h"
+#include "../../IPOCS.h"
 
 class PointsMotor_Pulse: public PointsMotor {
   public:

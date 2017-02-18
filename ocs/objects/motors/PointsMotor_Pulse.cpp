@@ -2,8 +2,7 @@
 
 #include "PointsMotorStore.h"
 #include "PointsMotor_Pulse.h"
-#include "ServerConnection.h"
-#include "IPOCS.h"
+#include "../../ServerConnection.h"
 
 const int NO_POSITION_INPUT = 99;
 
