@@ -38,23 +38,9 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
   if (msg->RXID_OBJECT == String((char)Configuration::getUnitID()))
   {
-    Serial.println("Message to board " + String(msg->packet->RNID_PACKET));
-    Serial.flush();
       if (msg->packet->RNID_PACKET == 5) {
-        Serial.println("Set application data");
-        Serial.flush();
-
         IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
         uint8_t dataLength = dataPkt->RL_PACKET - 5;
-
-        uint8_t* arr = dataPkt->data;
-        int arrLen = dataLength;
-        for (int i = 0; i < arrLen; i++)
-        {
-          Serial.print(String(arr[i], 16) + String(' '));
-        }
-        Serial.println();
-
         Configuration::setSD(dataPkt->data, dataLength);
         ServerConnection::getInstance().stop();
         delay(1000);
@@ -79,14 +65,9 @@ void ObjectStore::setup()
   byte sd[200];
   byte sdLength = Configuration::getSD(sd, 200);
   byte currPos = 0;
-  //int objNum = 0;
   if (!Configuration::verifyCrc()) {
-    Serial.println("Checksum failed");
-    Serial.flush();
     return;
   }
-  Serial.println("sdLength: " + String(sdLength));
-
   while (sdLength > currPos)
   {
     byte sdObjectType = sd[currPos];
@@ -96,14 +77,8 @@ void ObjectStore::setup()
     {
       objectName += String((char)(*firstChar));
     }
-    Serial.println(objectName);
-    Serial.flush();
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
-
-    Serial.println("Parsed: " + String(msgParsed));
-    Serial.println("Object Type" + String(sdObjectType));
-    Serial.flush();
 
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
 
@@ -113,10 +88,7 @@ void ObjectStore::setup()
       ObjectStore::getInstance().addObject(bo);
     }
     currPos += sdObjectLength + 1;
-    Serial.println("currPos: " + String(currPos));
-    //objNum++;
   }
-  Serial.println("Loading done");
 }
 
 void ObjectStore::registerType(int typeId, initObjectFunction fun)

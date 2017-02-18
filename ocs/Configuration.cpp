@@ -126,11 +126,6 @@ bool Configuration::verifyCrc()
   uint8_t data[100];
   uint8_t sdLength = Configuration::getSD(data, 0x100);
   uint16_t calculatedCrc = checkcrc(data, sdLength);
-
-  Serial.println("Stored crc = " + String(storedCrc));
-  Serial.println("Calculated crc = " + String(calculatedCrc));
-  Serial.println("SD Length = " + String(sdLength));
-  Serial.flush();
   return (sdLength != 0 && calculatedCrc == storedCrc);
 }
 

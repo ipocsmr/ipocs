@@ -105,11 +105,7 @@ void ServerConnection::loop()
         char sdVersion[10];
         sprintf(sdVersion, "%04X", Configuration::getSiteDataCrc());
         pkt->RXID_SITE_DATA_VERSION = String(sdVersion);
-        Serial.println(String(Configuration::getSiteDataCrc()) + " = " + pkt->RXID_SITE_DATA_VERSION);
-        Serial.println(String(pkt->RXID_SITE_DATA_VERSION.length()));
-        Serial.flush();
         msg->setPacket(pkt);
-
         this->send(msg);
         delete msg;
       }
