@@ -13,11 +13,6 @@
 
 const long reconnectTime = 1000;
 
-void reboot() {
-  while (true); // do nothing and wait for the eventual...
-  //asm volatile ("jmp 0");
-}
-
 void WiFiConnect()
 {
   if (WiFi.status() != WL_CONNECTED)
@@ -44,7 +39,8 @@ ServerConnection::ServerConnection()
     if (Ethernet.begin(mac) == 0) {
       Serial.println(" failed, rebooting");
       Serial.flush();
-      reboot();
+      ipocsResetFunc f = 0;
+      f();
     }
     this->server = new EthernetClient();
   }

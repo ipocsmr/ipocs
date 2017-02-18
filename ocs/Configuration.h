@@ -21,6 +21,8 @@
 
 #include <Ethernet.h>
 
+typedef void(* ipocsResetFunc) (void);
+
 class Configuration {
   public:
     static unsigned int getUnitID();

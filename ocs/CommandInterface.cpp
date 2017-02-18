@@ -11,6 +11,7 @@ const char PROMPT[] = "$> ";
 const char EQUALS[] = " = ";
 const char CMD_GET[] = "get";
 const char CMD_SET[] = "set";
+const char CMD_RESET[] = "reset";
 const char CMD_EXIT[] = "exit";
 const char CMD_CMD_UNITID[] = "unitid";
 const char CMD_CMD_MAC[] = "mac";
@@ -108,6 +109,11 @@ bool CommandInterface::handleCommand(String command)
   int index = command.indexOf(' ');
   String cmd = command.substring(0, index);
   command.remove(0, index + 1);
+  if (cmd == CMD_RESET)
+  {
+    ipocsResetFunc f = 0;
+    f();
+  }
   if (cmd == CMD_GET)
   {
     if (command == CMD_CMD_UNITID)
