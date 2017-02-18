@@ -1,6 +1,7 @@
 #include "Configuration.h"
 
 #include <EEPROM.h>
+#include <util/crc16.h>
 
 void Configuration::getMAC(byte MAC[6])
 {
@@ -89,6 +90,14 @@ byte Configuration::getSD(byte data[], int dataLength)
   return storedLength;
 }
 
+uint16_t checkcrc(uint8_t* data, uint16_t len)
+{
+  uint16_t crc = 0xFFFF, i;
+  for (i = 0; i < len; i++)
+    crc = _crc_ccitt_update(crc, data[i]);
+  return crc; // must be 0
+}
+
 void Configuration::setSD(byte data[], int dataLength)
 {
   EEPROM.write(32, dataLength);
@@ -96,9 +105,33 @@ void Configuration::setSD(byte data[], int dataLength)
   {
     EEPROM.write(33 + i, data[i]);
   }
+
+  uint16_t crc = checkcrc(data, dataLength);
+  EEPROM.write(8, crc >> 8);
+  EEPROM.write(9, crc & 0xFF);
 #ifdef ESP8266
   EEPROM.commit();
 #endif
+}
+
+uint16_t Configuration::getSiteDataCrc()
+{
+  return (EEPROM.read(8) << 8) + EEPROM.read(9);
+}
+
+bool Configuration::verifyCrc()
+{
+  uint16_t storedCrc = Configuration::getSiteDataCrc();
+
+  uint8_t data[100];
+  uint8_t sdLength = Configuration::getSD(data, 0x100);
+  uint16_t calculatedCrc = checkcrc(data, sdLength);
+
+  Serial.println("Stored crc = " + String(storedCrc));
+  Serial.println("Calculated crc = " + String(calculatedCrc));
+  Serial.println("SD Length = " + String(sdLength));
+  Serial.flush();
+  return (sdLength != 0 && calculatedCrc == storedCrc);
 }
 
 #ifdef ESP8266

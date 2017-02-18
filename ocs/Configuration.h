@@ -35,6 +35,9 @@ class Configuration {
     static void setPassword(String pwd);
     static byte getSD(byte data[], int dataLength);
     static void setSD(byte data[], int dataLength);
+
+    static uint16_t getSiteDataCrc();
+    static bool verifyCrc();
 };
 
 #endif
