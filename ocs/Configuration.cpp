@@ -19,9 +19,6 @@ void Configuration::setMAC(byte newMAC[6])
   {
     EEPROM.write(i, newMAC[i - 2]);
   }
-#ifdef ESP8266
-  EEPROM.commit();
-#endif
 }
 
 String Configuration::getSSID()
@@ -57,9 +54,6 @@ void Configuration::setPassword(String pwd)
   {
     EEPROM.write(24 + i, bpwd[i]);
   }
-#ifdef ESP8266
-  EEPROM.commit();
-#endif
 }
 
 unsigned int Configuration::getUnitID()
@@ -72,9 +66,6 @@ void Configuration::setUnitID(unsigned int unitID)
 {
   EEPROM.write(0, unitID >> 8);
   EEPROM.write(1, unitID & 0xFF);
-#ifdef ESP8266
-  EEPROM.commit();
-#endif
 }
 
 byte Configuration::getSD(byte data[], int dataLength)
@@ -109,9 +100,6 @@ void Configuration::setSD(byte data[], int dataLength)
   uint16_t crc = checkcrc(data, dataLength);
   EEPROM.write(8, crc >> 8);
   EEPROM.write(9, crc & 0xFF);
-#ifdef ESP8266
-  EEPROM.commit();
-#endif
 }
 
 uint16_t Configuration::getSiteDataCrc()
@@ -128,10 +116,3 @@ bool Configuration::verifyCrc()
   uint16_t calculatedCrc = checkcrc(data, sdLength);
   return (sdLength != 0 && calculatedCrc == storedCrc);
 }
-
-#ifdef ESP8266
-__attribute__((constructor))
-static void initialize_config() {
-  EEPROM.begin(512);
-}
-#endif

@@ -3,11 +3,10 @@
 #include "ObjectStore.h"
 #include "Configuration.h"
 #include <EEPROM.h>
-#ifdef ESP8266
+#ifdef ESP8266WiFi
 #include <ESP8266WiFi.h>
-#else
-#include <WiFi.h>
 #endif
+#include <WiFi.h>
 #include <Ethernet.h>
 #include "IPOCS/Message.h"
 #include "IPOCS/Packets/ConnectionRequestPacket.h"
