@@ -4,3 +4,9 @@
 .gcc-flags.json
 
 .travis.yml
+.vscode/.BROWSE*
+.vscode/.browse*
+.vscode/extensions.json
+.vscode/settings.json
+.vscode/launch.json
+.vscode/c_cpp_properties.json

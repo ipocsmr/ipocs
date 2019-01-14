@@ -13,7 +13,7 @@
 
 #include "PointsMotor.h"
 #include <Servo.h>
-#include "../../IPOCS/Packets/PointsStatusPacket.h"
+#include "../../../IPOCS/Packets/PointsStatusPacket.h"
 
 class PointsMotor_Servo: public PointsMotor {
   public:

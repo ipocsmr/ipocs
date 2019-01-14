@@ -11,30 +11,28 @@
  *
  * Bytes - Usage
  * 0-1   - Unit ID
- * 2-7   - MAC address / SSID if wifi shield is present
- * 8-23  - IPv4 (or in future IPv6 address)
- * 24-31 - SSID password (8 characters only)
- * 32-   - Object configuration data
+ * 2-35  - SSID if wifi shield is present
+ * 36-97 - SSID password (8 characters only)
+ * 98-99 - Object configuration data CCIT Checksum
+ * 100-  - Object configuration data
  */
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
 
-#include <Ethernet.h>
+#include <stdint.h>
 
-typedef void(* ipocsResetFunc) (void);
+class String;
 
 class Configuration {
   public:
-    static unsigned int getUnitID();
-    static void setUnitID(unsigned int unitID);
-    static void getMAC(byte MAC[6]);
-    static void setMAC(byte newMAC[6]);
+    static uint16_t getUnitID();
+    static void setUnitID(uint16_t unitID);
     static String getSSID();
     static void setSSID(String ssid);
     static String getPassword();
     static void setPassword(String pwd);
-    static byte getSD(byte data[], int dataLength);
-    static void setSD(byte data[], int dataLength);
+    static uint8_t getSD(uint8_t data[], int dataLength);
+    static void setSD(uint8_t data[], int dataLength);
 
     static uint16_t getSiteDataCrc();
     static bool verifyCrc();

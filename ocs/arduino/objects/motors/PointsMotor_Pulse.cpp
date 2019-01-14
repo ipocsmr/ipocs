@@ -2,9 +2,9 @@
 
 #include "PointsMotorStore.h"
 #include "PointsMotor_Pulse.h"
-#include "../../ServerConnection.h"
+#include "../../log.h"
 
-const int NO_POSITION_INPUT = 99;
+const int NO_POSITION_INPUT = 100;
 
 // Left state is less than or equal to this value.
 const int StateLeft = 399;
@@ -19,11 +19,9 @@ PointsMotor_Pulse::PointsMotor_Pulse()
 
 int PointsMotor_Pulse::objectInit(byte configData[])
 {
-  this->throwLeftOutput = configData[1] - 1;
-  this->throwRightOutput = configData[2] - 1;
+  this->throwLeftOutput = configData[1];
+  this->throwRightOutput = configData[2];
   this->posInput = configData[3];
-  if (this->posInput != 0)
-    this->posInput--;
 
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrderMillis = 0;
@@ -36,8 +34,10 @@ int PointsMotor_Pulse::objectInit(byte configData[])
 
 void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
 {
+  Log log1("Order MSG");
   if (basePacket->RNID_PACKET == 10)
   {
+    LOG("throw order");
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
     this->lastOrderMillis = millis();
     this->lastOrderState = packet->RQ_POINTS_COMMAND;

@@ -22,6 +22,7 @@ class BasicObject {
     virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void loop() = 0;
     virtual bool hasName(String objectName);
+    String name() { return objectName; }
   protected:
     virtual void objectInit(byte configData[], int configDataLen) = 0;
     String objectName;

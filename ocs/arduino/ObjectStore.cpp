@@ -1,9 +1,9 @@
 
 #include "ObjectStore.h"
-#include "Configuration.h"
-#include "ServerConnection.h"
-#include "IPOCS/Message.h"
-#include "IPOCS/Packets/ApplicationDataPacket.h"
+#include "EspConnection.h"
+#include "../IPOCS/Message.h"
+#include "../IPOCS/Packets/ApplicationDataPacket.h"
+#include "log.h"
 
 ObjectStore::ObjectStore()
 {
@@ -30,46 +30,29 @@ void ObjectStore::addObject(BasicObject* bo)
 
 void ObjectStore::loop()
 {
+  //Log log(String(__FILE__) + ":" + String(__FUNCTION__));
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
+    //Log log2(String(__FILE__) + ":" + String(__FUNCTION__) + " - " + node->object->name());
     node->object->loop();
   }
 }
 
 void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
-  if (msg->RXID_OBJECT == String((char)Configuration::getUnitID()))
+  Log log1("Order to object '" + String(msg->RXID_OBJECT) + "'");
+  for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
-      if (msg->packet->RNID_PACKET == 5) {
-        IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
-        uint8_t dataLength = dataPkt->RL_PACKET - 5;
-        Configuration::setSD(dataPkt->data, dataLength);
-        ServerConnection::getInstance().stop();
-        delay(1000);
-        ipocsResetFunc f = 0;
-        f();
-      }
-  }
-  else
-  {
-    for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
+    if (node->object->hasName(msg->RXID_OBJECT))
     {
-      if (node->object->hasName(msg->RXID_OBJECT))
-      {
-        node->object->handleOrder(msg->packet);
-      }
+      node->object->handleOrder(msg->packet);
     }
   }
 }
 
-void ObjectStore::setup()
+void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
 {
-  byte sd[200];
-  byte sdLength = Configuration::getSD(sd, 200);
   byte currPos = 0;
-  if (!Configuration::verifyCrc()) {
-    return;
-  }
   while (sdLength > currPos)
   {
     byte sdObjectType = sd[currPos];
@@ -81,11 +64,8 @@ void ObjectStore::setup()
     }
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
-
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
-
       BasicObject* bo = this->functions[sdObjectType]();
-
       bo->init(objectName, sd + msgParsed, sdObjectLength - msgParsed);
       ObjectStore::getInstance().addObject(bo);
     }

@@ -28,3 +28,8 @@ uint8_t IPOCS::ConnectionRequestPacket::serializeSpecific(uint8_t buffer[])
   this->RXID_SITE_DATA_VERSION.getBytes(buffer + 2, this->RXID_SITE_DATA_VERSION.length() + 1);
   return 2 + this->RXID_SITE_DATA_VERSION.length() + 1;
 }
+
+__attribute__((constructor))
+static void initialize_packet_connectionrequest() {
+  IPOCS::Packet::registerCreator(1, &IPOCS::ConnectionRequestPacket::create);
+}

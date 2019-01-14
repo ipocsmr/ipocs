@@ -10,8 +10,8 @@
 #define POINTSMOTOR_PULSE_H
 
 #include "PointsMotor.h"
-#include "../../IPOCS/Packets/PointsStatusPacket.h"
-#include "../../IPOCS/Packets/ThrowPointsPacket.h"
+#include "../../../IPOCS/Packets/PointsStatusPacket.h"
+#include "../../../IPOCS/Packets/ThrowPointsPacket.h"
 
 class PointsMotor_Pulse: public PointsMotor {
   public:

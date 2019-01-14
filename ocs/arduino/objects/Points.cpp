@@ -3,8 +3,10 @@
 #include "../ObjectStore.h"
 #include "motors/PointsMotor.h"
 #include "motors/PointsMotorStore.h"
-#include "../ServerConnection.h"
-#include "../IPOCS/Message.h"
+#include "../EspConnection.h"
+#include "../../IPC/Message.h"
+#include "../../IPOCS/Message.h"
+#include "../log.h"
 
 Points::Points() {
   this->lastSentState = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
@@ -13,24 +15,33 @@ Points::Points() {
 
 void Points::handleOrder(IPOCS::Packet* basePacket)
 {
-  if (basePacket->RNID_PACKET == 10)
-  {
-    if (this->frogOutput != 0)
-      digitalWrite(this->frogOutput - 1, LOW);
+  Log log1("Order ID '" + String(basePacket->RNID_PACKET) + "'");
+
+  if (basePacket->RNID_PACKET == 10) {
+    if (this->frogOutput != 0) {
+      digitalWrite(this->frogOutput, LOW);
+    }
     for (PointsMotorNode* currentNode = this->first; currentNode != NULL; currentNode = currentNode->next)
     {
       currentNode->motor->handleOrder(basePacket);
     }
   } else if (basePacket->RNID_PACKET == 7) {
-    IPOCS::Message* msg = IPOCS::Message::create();
-    msg->RXID_OBJECT = this->objectName;
-
+    IPOCS::Message* ipocsMsg = IPOCS::Message::create();
+    ipocsMsg->RXID_OBJECT = this->objectName;
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = this->lastSentState;
-    msg->setPacket(pkt);
-    ServerConnection::getInstance().send(msg);
-    delete msg;
+    ipocsMsg->setPacket(pkt);
+    IPC::Message* ipcMsg = IPC::Message::create();
+    ipcMsg->RT_TYPE = IPC::IPOCS;
+    uint8_t message[ipocsMsg->RL_MESSAGE + 10];
+    ipocsMsg->serialize(message);
+    ipcMsg->setPayload();
+    ipcMsg->setPayload(message, ipocsMsg->RL_MESSAGE);
+    delete ipocsMsg;
+    ard::EspConnection::instance().send(ipcMsg, true);
+    delete ipcMsg;
   } else {
+    LOG("NOT HANDLED");
     // TODO: Send alarm or something about invalid packet type.
   }
 }
@@ -50,17 +61,26 @@ void Points::loop()
     allSame = (allState == currentNode->motor->getState());
   }
   if (allSame && this->lastSentState != allState) {
-    if (this->frogOutput != 0 && allState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT)
-      digitalWrite(this->frogOutput - 1, HIGH);
+    if (this->frogOutput != 0 && allState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT) {
+      digitalWrite(this->frogOutput, HIGH);
+    }
 
-    IPOCS::Message* msg = IPOCS::Message::create();
-    msg->RXID_OBJECT = this->objectName;
-
+    IPOCS::Message* ipocsMsg = IPOCS::Message::create();
+    ipocsMsg->RXID_OBJECT = this->objectName;
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = allState;
-    msg->setPacket(pkt);
-    ServerConnection::getInstance().send(msg);
-    delete msg;
+    ipocsMsg->setPacket(pkt);
+
+    IPC::Message* ipcMsg = IPC::Message::create();
+    ipcMsg->RT_TYPE = IPC::IPOCS;
+    uint8_t message[ipocsMsg->RL_MESSAGE + 10];
+    ipocsMsg->serialize(message);
+    ipcMsg->setPayload(message, ipocsMsg->RL_MESSAGE);
+    delete ipocsMsg;
+
+
+    ard::EspConnection::instance().send(ipcMsg);
+    delete ipcMsg;
     this->lastSentState = allState;
   }
 }
@@ -68,8 +88,9 @@ void Points::loop()
 void Points::objectInit(byte configData[], int configDataLen)
 {
   this->frogOutput = configData[0];
-  if (this->frogOutput != 0)
-    pinMode(this->frogOutput - 1, OUTPUT);
+  if (this->frogOutput != 0) {
+    pinMode(this->frogOutput, OUTPUT);
+  }
   byte* configDataCurrent = configData + 1;
   for (int index = 1; index < configDataLen; )
   {
@@ -83,8 +104,7 @@ void Points::objectInit(byte configData[], int configDataLen)
     PointsMotorNode* node = new PointsMotorNode();
     node->next = NULL;
     node->motor = pointsMotor;
-    if (this->first != NULL)
-    {
+    if (this->first != NULL) {
       node->next = this->first;
     }
     this->first = node;

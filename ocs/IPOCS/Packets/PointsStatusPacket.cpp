@@ -29,3 +29,8 @@ uint8_t IPOCS::PointsStatusPacket::serializeSpecific(uint8_t buffer[])
   buffer[3] = this->RT_OPERATION & 0xFF;
   return 4;
 }
+
+__attribute__((constructor))
+static void initialize_packet_pointstatus() {
+  IPOCS::Packet::registerCreator(17, &IPOCS::PointsStatusPacket::create);
+}

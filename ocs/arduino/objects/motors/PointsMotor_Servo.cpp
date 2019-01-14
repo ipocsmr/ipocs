@@ -2,12 +2,12 @@
 
 #include "PointsMotorStore.h"
 #include "PointsMotor_Servo.h"
-#include "../../ServerConnection.h"
-#include "../../IPOCS/Packets/ThrowPointsPacket.h"
+#include "../../../IPOCS/Packets/ThrowPointsPacket.h"
+#include "../../log.h"
 
 const int servoRightVal = 20;
 const int servoLeftVal = 150;
-const int pointStepTime = 30;
+const int pointStepTime = 20;
 // Left state is less than or equal to this value.
 const int StateLeft = 399;
 // Moving/Out Of Control state is less than or equal to this value (Out Of Control after 10s)
@@ -23,11 +23,14 @@ int PointsMotor_Servo::objectInit(byte configData[])
 {
   this->lastRun = millis();
   this->setPos = servoRightVal;
-  this->curPos = servoRightVal + 1;
+  this->curPos = servoRightVal;
 
   this->object.attach(configData[1]);
-  this->posInput = configData[2] - 1;
-
+  this->posInput = configData[2];
+#ifdef HAVE_HWSERIAL3
+  Serial.println("  -> " + String(configData[1]) + " : "+ String(configData[2]));
+  Serial.flush();
+#endif
   return 3;
 }
 
@@ -35,11 +38,12 @@ void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
 {
   if (basePacket->RNID_PACKET == 10)
   {
+    LOG("throw order");
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
     switch (packet->RQ_POINTS_COMMAND)
     {
-      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: this->setPos = servoRightVal; break;
-      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: this->setPos = servoLeftVal; break;
+      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: this->setPos = servoRightVal; break;
+      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: this->setPos = servoLeftVal; break;
       default:
         // TODO: Send error about invalid value
         break;
@@ -59,6 +63,7 @@ void PointsMotor_Servo::loop()
     // And then move
     this->curPos += direction;
     this->object.write(this->curPos);
+
     // And possibly notify on reaching end position (obsolete if we have an input to look at)
   }
 }
