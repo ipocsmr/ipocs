@@ -44,7 +44,6 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
         IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
         uint8_t dataLength = dataPkt->RL_PACKET - 5;
         Configuration::setSD(dataPkt->data, dataLength);
-        ServerConnection::getInstance().stop();
         delay(1000);
         ipocsResetFunc f = 0;
         f();
@@ -64,10 +63,18 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
 
 void ObjectStore::setup()
 {
+#ifdef HAVE_HWSERIAL3
+  Serial.println("Loading SiteData...");
+  Serial.flush();
+#endif
   byte sd[200];
   byte sdLength = Configuration::getSD(sd, 200);
   byte currPos = 0;
   if (!Configuration::verifyCrc()) {
+#ifdef HAVE_HWSERIAL3
+    Serial.println("SiteData CRC validation FAILED!");
+    Serial.flush();
+#endif
     return;
   }
   while (sdLength > currPos)
@@ -79,13 +86,14 @@ void ObjectStore::setup()
     {
       objectName += String((char)(*firstChar));
     }
+#ifdef HAVE_HWSERIAL3
+    Serial.println("-> " + objectName + " : " + String(sdObjectType));
+    Serial.flush();
+#endif
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
-
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
-
       BasicObject* bo = this->functions[sdObjectType]();
-
       bo->init(objectName, sd + msgParsed, sdObjectLength - msgParsed);
       ObjectStore::getInstance().addObject(bo);
     }

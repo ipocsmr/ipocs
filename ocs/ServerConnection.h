@@ -9,9 +9,13 @@
 #ifndef SERVER_CONNECTION_H
 #define SERVER_CONNECTION_H
 
-#include <EthernetUdp.h>
+#include <stdint.h>
+#include <Arduino.h>
 
-class Client;
+#if CARD==ROBOTDYN_WIFI
+class ESP8266;
+#endif
+
 namespace IPOCS {
   class Message;
 }
@@ -26,17 +30,18 @@ class ServerConnection {
 
     void setup();
     void loop();
-    void stop();
-
+    
     void send(IPOCS::Message* msg);
   private:
     ServerConnection();
     ServerConnection(ServerConnection const&);              // Don't Implement
     void operator=(ServerConnection const&); // Don't implement
 
-    Client* server;
+#if CARD==ROBOTDYN_WIFI
+    ESP8266* wifi;
+    String* serverIP;
+#endif
     long lastReconnect;
-    EthernetUDP udp;
 };
 
 #endif

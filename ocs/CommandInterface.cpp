@@ -22,20 +22,20 @@ const char CMD_CMD_DATA[] = "data";
 void CommandInterface::setup()
 {
   Serial.begin(115200);
-  Serial.println(TO_ENTER_SETUP);
-  Serial.flush();
   long startedAt = millis();
   unsigned int unitId = Configuration::getUnitID();
-  while (millis() - startedAt <= waitAtStartTime || unitId == 0xFFFF)
-  {
-    if (!Serial)
-    {
-      Serial.begin(115200);
-      continue;
-    }
+  if (Configuration::getUnitID() == 0xFFFF) {
+    // 0xFF indicates uninitialized memory.
+    // Force setup mode...
+    this->setupMode();
+  } else {
+    Serial.println(TO_ENTER_SETUP);
+    Serial.flush();
+  }
+  while (millis() - startedAt <= waitAtStartTime) {
     if (Serial.available()) {
       char inChar = Serial.read();
-      if (inChar == 's' || inChar == 'S' || unitId == 0xFFFF) {
+      if (inChar == 's' || inChar == 'S') {
         while (Serial.available()) {
           inChar = Serial.read();
         }
@@ -44,17 +44,10 @@ void CommandInterface::setup()
       }
     }
   }
-  if (Configuration::getUnitID() == 0xFFFF)
-  {
-    // 0xFF in a byte indicates uninitialized memory.
-    // Force setup mode...
-    this->setupMode();
-  }
 }
 
 void CommandInterface::loop()
 {
-
 }
 
 void CommandInterface::setupMode()

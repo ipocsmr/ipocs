@@ -12,7 +12,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug",
-            "executable": "c:/Users/Fredrik/git/gmjs_ocs/.pioenvs/pro16MHzatmega328/firmware.elf",
+            "executable": "c:/Users/Fredrik/git/gmjs_ocs/.pioenvs/rdyn_megawifi/firmware.elf",
             "toolchainBinDir": "C:/Users/Fredrik/.platformio/packages/toolchain-atmelavr/bin",
             "preLaunchTask": {
                 "type": "PlatformIO",
@@ -24,7 +24,7 @@
             "type": "platformio-debug",
             "request": "launch",
             "name": "PIO Debug (skip Pre-Debug)",
-            "executable": "c:/Users/Fredrik/git/gmjs_ocs/.pioenvs/pro16MHzatmega328/firmware.elf",
+            "executable": "c:/Users/Fredrik/git/gmjs_ocs/.pioenvs/rdyn_megawifi/firmware.elf",
             "toolchainBinDir": "C:/Users/Fredrik/.platformio/packages/toolchain-atmelavr/bin",
             "internalConsoleOptions": "openOnSessionStart"
         }

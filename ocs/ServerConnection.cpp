@@ -2,102 +2,89 @@
 #include "ServerConnection.h"
 #include "ObjectStore.h"
 #include "Configuration.h"
-#include <EEPROM.h>
-#ifdef ESP8266WiFi
-#include <ESP8266WiFi.h>
-#endif
-#include <WiFi.h>
-#include <Ethernet.h>
 #include "IPOCS/Message.h"
 #include "IPOCS/Packets/ConnectionRequestPacket.h"
+#include <ESP8266.h>
 
 const long reconnectTime = 1000;
 
-void WiFiConnect()
-{
-  if (WiFi.status() != WL_CONNECTED)
-  {
-    String ssid = Configuration::getSSID();
-    String pwd = Configuration::getPassword();
-    WiFi.begin((char*)ssid.c_str(), pwd.c_str());
-    while (WiFi.status() != WL_CONNECTED) {
-      delay(500);
-    }
-  }
-}
-
-ServerConnection::ServerConnection()
-{
+ServerConnection::ServerConnection() {
   this->lastReconnect = millis() - reconnectTime;
-
-  if (WiFi.status() == WL_NO_SHIELD)
-  {
-    // No WiFi shield. Assume Ethernet
-    byte mac[6];
-    Configuration::getMAC(mac);
-    // start the Ethernet connection:
-    if (Ethernet.begin(mac) == 0) {
-      Serial.println(" failed, rebooting");
-      Serial.flush();
-      ipocsResetFunc f = 0;
-      f();
-    }
-    this->server = new EthernetClient();
+  this->serverIP = NULL;
+  String ssid = Configuration::getSSID();
+  String pwd = Configuration::getPassword();
+#ifdef HAVE_HWSERIAL3
+  Serial.println("Booting card...");
+  Serial.flush();
+#endif
+#if defined(HAVE_HWSERIAL3)
+  //HardwareSerial wifiSerial = Serial3;
+  this->wifi = new ESP8266(Serial3);
+#else
+  //HardwareSerial wifiSerial = Serial;
+  this->wifi = new ESP8266(Serial);
+#endif
+  if (!this->wifi->restart()) {
+#ifdef HAVE_HWSERIAL3
+    Serial.println("Restart failed");
+    Serial.flush();
+#endif
+    ipocsResetFunc f = 0;
+    f();
   }
-  else
+  if (!this->wifi->kick())
   {
-    this->server = new WiFiClient();
-    WiFiConnect();
+#ifdef HAVE_HWSERIAL3
+    Serial.println("Kick failed");
+    Serial.flush();
+#endif
+    ipocsResetFunc f = 0;
+    f();
   }
-  udp.begin(10000);
+  this->wifi->enableMUX();
+  this->wifi->joinAP(ssid, pwd);
+  this->wifi->registerUDP(1, "255.255.255.255", 10000);
 }
 
-void ServerConnection::setup()
-{
-}
+void ServerConnection::setup() { }
 
-void ServerConnection::send(IPOCS::Message* msg)
-{
-  if (!this->server->connected())
-  {
+void ServerConnection::send(IPOCS::Message* msg) {
+  if (this->serverIP == NULL || -1 == this->wifi->getIPStatus().indexOf(*(this->serverIP))) {
     return;
   }
   uint8_t buffer[255];
   uint8_t len = msg->serialize(buffer);
-  this->server->write(buffer, len);
+  this->wifi->send(2, buffer, len);
 }
 
-void ServerConnection::loop()
-{
-  if (!this->server->connected() && (millis() - this->lastReconnect > reconnectTime)) {
-    this->lastReconnect = millis();
-    if (WiFi.status() != WL_NO_SHIELD)
-    {
-      WiFiConnect();
-    }
-    Serial.print("(Re)connecting...");
-    this->server->stop();
-
-    int packetSize = this->udp.parsePacket();
-    if (packetSize == 0)
-    {
-      this->udp.beginPacket("255.255.255.255", 10000);
-      this->udp.write("get server");
-      this->udp.endPacket();
-      Serial.println(" sent UDP.");
-      Serial.flush();
-    }
-    else
-    {
-      char packetBuffer[40];
-      this->udp.read(packetBuffer, 40);
-
-      IPAddress ip(packetBuffer[0], packetBuffer[1], packetBuffer[2], packetBuffer[3]);
-      int port = (packetBuffer[4] << 8) + packetBuffer[5];
-      byte returnVal = this->server->connect(ip, port);
-      if (returnVal == 1)
+void ServerConnection::loop() {
+#if CARD==ROBOTDYN_WIFI
+  if (this->serverIP == NULL) {
+    uint8_t recvBuffer[40];
+    uint32_t bytesRecv = this->wifi->recv(1, recvBuffer, 4);
+    if (bytesRecv == 0) {
+      String getData = "get server";
+      if (!this->wifi->send(1, (const uint8_t*)getData.c_str(), getData.length()))
       {
+        Serial.println("Sending failed");
+        // TODO: Handle not being able to send UDP
+        return;
+      }
+      return;
+    } 
+    if (bytesRecv == 4) {
+#ifdef HAVE_HWSERIAL3
+      Serial.print("Connecting...");
+#endif
+      char ipAddress[24];
+      sprintf(ipAddress, "%d.%d.%d.%d", recvBuffer[0], recvBuffer[1], recvBuffer[2], recvBuffer[3]);
+      String* newIp = new String(ipAddress);
+      if (this->wifi->createTCP(2, *(newIp), 10000U)) {
+        this->serverIP = newIp;
+#ifdef HAVE_HWSERIAL3
         Serial.println(" done");
+        Serial.flush();
+#endif
         IPOCS::Message* msg = IPOCS::Message::create();
         msg->RXID_OBJECT = String((char)Configuration::getUnitID());
         IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
@@ -108,43 +95,50 @@ void ServerConnection::loop()
         msg->setPacket(pkt);
         this->send(msg);
         delete msg;
-      }
-      else
-      {
-        Serial.print(String(' ') + String(returnVal));
+      } else {
+#ifdef HAVE_HWSERIAL3
         Serial.println(" failed");
+        Serial.flush();
+#endif
       }
     }
-  } else if (*this->server) {
-    while (this->server->available()) {
-      // Read the header
-      byte RL_MESSAGE = 0;
-      int numRead = this->server->read(&RL_MESSAGE, 1);
-      if (numRead != 1)
-      {
-        // Close connection - error in reading.
-        this->server->stop();
-        return;
-      }
-      // Define the message
-      byte message[RL_MESSAGE];
-      message[0] = RL_MESSAGE;
-      // Read the rest of the message
-      numRead += this->server->read(message + 1, RL_MESSAGE - 1);
-      if (numRead != RL_MESSAGE)
-      {
-        // Close connection - error in reading.
-        this->server->stop();
-        return;
-      }
-      // Now parse it.
-      IPOCS::Message* msg = IPOCS::Message::create(message);
-      ObjectStore::getInstance().handleOrder(msg);
-      delete msg;
-    }
+    return;
   }
-}
+    
+  // Check if getIPStatus contains the connection, if it doesn't - connect again.
+  if (-1 == this->wifi->getIPStatus().indexOf(*(this->serverIP))) {
+#ifdef HAVE_HWSERIAL3
+    Serial.println("No connection");
+#endif
+    delete this->serverIP;
+    this->serverIP = NULL;
+    this->wifi->releaseTCP(2);
+    return;
+  }
 
-void ServerConnection::stop() {
-  this->server->stop();
+  // There was a byte. Now read more
+  // Read the header
+  uint8_t muxId = 0;
+  uint8_t message[255];
+  uint32_t numRead = this->wifi->recv(&muxId, message, 255, 200U);
+  if (numRead == 0) {
+    return;
+  }
+  if (muxId != 2) {
+    return;
+  }
+  // Define the message
+  if (numRead != message[0]) {
+    // Close connection - error in reading.
+    delete this->serverIP;
+    this->serverIP = NULL;
+    this->wifi->releaseTCP(2);
+    this->wifi->registerUDP(1, "255.255.255.255", 10000);
+    return;
+  }
+  // Now parse it.
+  IPOCS::Message* msg = IPOCS::Message::create(message);
+  ObjectStore::getInstance().handleOrder(msg);
+  delete msg;
+#endif // CARD == ROBOTDYN_WIFI
 }
