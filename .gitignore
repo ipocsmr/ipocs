@@ -3,7 +3,6 @@
 .clang_complete
 .gcc-flags.json
 
-.travis.yml
 .vscode/.BROWSE*
 .vscode/.browse*
 .vscode/extensions.json
