@@ -5,6 +5,7 @@
 #include "../IPOCS/Message.h"
 #include "ArduinoConnection.h"
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <WiFiClient.h>
 
 #define MIN_LOOP_TIME 100
@@ -36,6 +37,8 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 
 void setup(void)
 {
+  String name = "ipocs_" + String(ESP.getChipId());
+  MDNS.begin(name.c_str());
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
   WiFi.onStationModeConnected(onStationModeConnected);
@@ -51,12 +54,14 @@ int attemptNo = 0;
 
 void loop(void)
 {
+  MDNS.update();
   int loopStart = millis();
   int wiFiStatus = WiFi.status();
   if (wiFiStatus != WL_CONNECTED)
   {
     if ((millis() - connectionInitiated) > 10000)
     {
+      MDNS.notifyAPChange();
       connectionInitiated = millis();
       if (attemptNo < 5)
       {
@@ -87,6 +92,7 @@ void loop(void)
       attemptNo = 0;
       connectionInitiated = 0;
       esp::Http::instance().log(String("IP address: ") + WiFi.localIP().toString());
+      MDNS.notifyAPChange();
     }
   }
   esp::Http::instance().loop();

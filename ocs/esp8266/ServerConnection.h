@@ -2,7 +2,6 @@
 #define ESP8266_SERVERCONNECTION_H
 
 class Client;
-class WiFiUDP;
 namespace IPOCS {
     class Message;
 };
@@ -17,7 +16,6 @@ namespace esp {
             ServerConnection();
             virtual ~ServerConnection();
             Client* tcp;
-            WiFiUDP* udp;
     };
 };
 

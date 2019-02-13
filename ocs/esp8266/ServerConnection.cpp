@@ -6,18 +6,16 @@
 #include "http.h"
 #include "ArduinoConnection.h"
 #include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 
 esp::ServerConnection::ServerConnection() {
     this->tcp = new WiFiClient();
-    this->udp = new WiFiUDP();
-    this->udp->begin(10000);
 }
 
 esp::ServerConnection::~ServerConnection() {
     // this will never happen (as long as this class is a singleton) and generates warnings.
     //delete this->tcp;
-    //delete this->udp;
 }
 
 esp::ServerConnection& esp::ServerConnection::instance() {
@@ -33,45 +31,32 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
         return;
     }
     if (!this->tcp->connected()) {
-        int packetSize = this->udp->parsePacket();
-        if (packetSize == 0)
-        {
-            this->udp->beginPacket("255.255.255.255", 10000);
-            this->udp->write("get server");
-            this->udp->endPacket();
-        }
-        else
-        {
-            char packetBuffer[40];
-            this->udp->read(packetBuffer, 40);
-
-            IPAddress ip(packetBuffer[0], packetBuffer[1], packetBuffer[2], packetBuffer[3]);
-            int port = (packetBuffer[4] << 8) + packetBuffer[5];
+        int responses = MDNS.queryService("ipocs", "tcp");
+        esp::Http::instance().log("Number of mdns services: " + String(responses));
+        if (responses != 0 && MDNS.IP(0) != IPAddress()) {
+            IPAddress ip = MDNS.IP(0);
+            uint16_t port = MDNS.port(0);
+            esp::Http::instance().log("Connecting to: " + String(ip[3]) + "." + String(ip[2]) + "." + String(ip[1]) + "." + String(ip[0]) + ":" + String(port));
             byte returnVal = this->tcp->connect(ip, port);
-            if (returnVal == 1)
-            {
+            if (returnVal == 1) {
                 IPOCS::Message* msg = IPOCS::Message::create();
                 msg->RXID_OBJECT = String((char)Configuration::getUnitID());
                 IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
                 pkt->RM_PROTOCOL_VERSION = 0x0101;
                 char sdVersion[10];
-                int sdSize = sprintf(sdVersion, "%04X", Configuration::getSiteDataCrc());
+                sprintf(sdVersion, "%04X", Configuration::getSiteDataCrc());
                 pkt->RXID_SITE_DATA_VERSION = String(sdVersion);
                 msg->setPacket(pkt);
                 this->send(msg);
                 delete msg;
-            }
-            else
-            {
-            }
+            } else { }
         }
     } else {
         while (this->tcp->available()) {
             // Read the header
             byte RL_MESSAGE = 0;
             int numRead = this->tcp->read(&RL_MESSAGE, 1);
-            if (numRead != 1)
-            {
+            if (numRead != 1) {
                 // Close connection - error in reading.
                 this->tcp->stop();
                 return;
@@ -81,8 +66,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             message[0] = RL_MESSAGE;
             // Read the rest of the message
             numRead += this->tcp->read(message + 1, RL_MESSAGE - 1);
-            if (numRead != RL_MESSAGE)
-            {
+            if (numRead != RL_MESSAGE) {
                 // Close connection - error in reading.
                 this->tcp->stop();
                 return;
@@ -101,8 +85,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
 
 void esp::ServerConnection::send(IPOCS::Message* msg)
 {
-  if (!this->tcp->connected())
-  {
+  if (!this->tcp->connected()) {
     esp::Http::instance().log("Not connected, throwing message");
     return;
   }
