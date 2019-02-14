@@ -3,11 +3,37 @@ This project implements the IPOCS specification that can be found [here](https:/
 
 ## Hardware
 
-This software is tested on both Arduino UNO and Arduino MEGA compatible devices
-using an ESP8266 connected via serial port. The WeeESP8266 library is used to
-control the ESP8266 module.
+### Arduino
 
-If the device has four serial ports (such as on a MEGA) it is assumed that the
-fourth serial port is used to talk to the ESP8266 module.
-If this is the case, serial debugging output will be enabled on the primary
-serial port.
+#### Uno
+
+Untested, but should work.
+
+#### Mega
+
+Fully tested. ESP must be connected to serial port 3.
+
+### ESP8266
+
+Implements communication with stationary. Talks to Arduino over serial line.
+
+## Installation
+
+You need to have Platform IO installed.
+To compile and upload to Arduino, run
+
+```
+platformio run -e mega -t upload
+```
+
+This will automatically upload to the first available Arduino board.
+The `-e` option expects a value from `platformio.ini`.  For ESP8266 and serial upload, use `esp8266_serial`.
+If you just wand to build, remove `-t upload` from the command.
+
+Once the ESP has been flashed once, subsequent flashed can be done over WiFi.
+
+## Setting up
+
+The ESP will try to connect to a configured WiFi (even if none has been configured).
+Once it has failed 4 times it will set up a SoftAP and respond on IP 192.168.4.1.
+Use this to make initial configuration
