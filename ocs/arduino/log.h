@@ -4,7 +4,6 @@
 class String;
 
 #ifdef HAVE_HWSERIAL3
-#define LOG_TRACE(msg) Log(msg);
 #define LOG(msg) Serial.println(String("= ") + String(msg)); Serial.flush();
 #else
 #define LOG(msg) ;
@@ -13,16 +12,22 @@ class String;
 class Log {
     public:
         Log(String message) {
+#ifdef HAVE_HWSERIAL3
             this->message = message;
             Serial.println("> " + message);
             Serial.flush();
+#endif
         }
         ~Log() {
+#ifdef HAVE_HWSERIAL3
             Serial.println("< " + this->message);
             Serial.flush();
+#endif
         }
     private:
+#ifdef HAVE_HWSERIAL3
         String message;
+#endif
 };
 
 #endif

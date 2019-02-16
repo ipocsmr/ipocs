@@ -16,7 +16,6 @@ Points::Points() {
 void Points::handleOrder(IPOCS::Packet* basePacket)
 {
   Log log1("Order ID '" + String(basePacket->RNID_PACKET) + "'");
-
   if (basePacket->RNID_PACKET == 10) {
     if (this->frogOutput != 0) {
       digitalWrite(this->frogOutput, LOW);
@@ -77,7 +76,6 @@ void Points::loop()
     ipocsMsg->serialize(message);
     ipcMsg->setPayload(message, ipocsMsg->RL_MESSAGE);
     delete ipocsMsg;
-
 
     ard::EspConnection::instance().send(ipcMsg);
     delete ipcMsg;

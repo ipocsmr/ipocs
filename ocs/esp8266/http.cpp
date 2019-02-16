@@ -11,7 +11,18 @@
 
 using namespace std::placeholders;
 
-//extern void array_to_string(const uint8_t array[], unsigned int len, char buffer[]);
+void array_to_string(const uint8_t array[], unsigned int len, char buffer[])
+{
+    for (unsigned int i = 0; i < len; i++)
+    {
+        byte nib1 = (array[i] >> 4) & 0x0F;
+        byte nib2 = (array[i] >> 0) & 0x0F;
+        buffer[i*3+0] = ' ';
+        buffer[i*3+1] = nib1  < 0xA ? '0' + nib1  : 'A' + nib1  - 0xA;
+        buffer[i*3+2] = nib2  < 0xA ? '0' + nib2  : 'A' + nib2  - 0xA;
+    }
+    buffer[len*3] = '\0';
+}
 
 esp::Http& esp::Http::instance() {
   static esp::Http __instance;
@@ -52,13 +63,6 @@ void esp::Http::log(const String& string) {
   String ss = string;
   this->webSocket->broadcastTXT(ss);
 }
-
-/*void esp::Http::log(const uint8_t* buffer, const size_t size) {
-  char str[100] = "";
-  array_to_string((uint8_t*)buffer, size, str);
-  String ss(str);
-  this->webSocket->broadcastTXT(ss);
-}*/
 
 void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   if (type == WStype_TEXT){
@@ -104,7 +108,13 @@ void esp::Http::index() {
   html += "<tr><th>PWD</th><td><input id='pwd' value='";
   html += Configuration::getPassword();
   html += "'><button onClick='postIt(\"pwd\", \"/api/updatePwd\");'>Update</button></td></tr>\n";
-  html += "<tr><th>Site Data</th><td><input id='sd' value='Test'><button onClick='postIt(\"sd\", \"/api/updateSd\");'>Update</button></td></tr>\n";
+  uint8_t siteData[200];
+  uint8_t siteDataLength = Configuration::getSD(siteData, 200);
+  char str[100] = "";
+  array_to_string(siteData, siteDataLength, str);
+  html += "<tr><th>Site Data</th><td><input id='sd' value='";
+  html += String(str);
+  html += "'><button onClick='postIt(\"sd\", \"/api/updateSd\");'>Update</button></td></tr>\n";
   html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/restartESP\");'>Restart WiFi</button></td></tr>\n";
   html += "<tr><th>&nbsp;</th><td><button onClick='postIt(\"hidden\", \"/api/restartArduino\");'>Restart Arduino</button></td></tr>\n";
   html += "</table>\n";

@@ -3,7 +3,6 @@
 #include "EspConnection.h"
 #include "../IPOCS/Message.h"
 #include "../IPOCS/Packets/ApplicationDataPacket.h"
-#include "log.h"
 
 ObjectStore::ObjectStore()
 {
@@ -30,17 +29,14 @@ void ObjectStore::addObject(BasicObject* bo)
 
 void ObjectStore::loop()
 {
-  //Log log(String(__FILE__) + ":" + String(__FUNCTION__));
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
-    //Log log2(String(__FILE__) + ":" + String(__FUNCTION__) + " - " + node->object->name());
     node->object->loop();
   }
 }
 
 void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
-  Log log1("Order to object '" + String(msg->RXID_OBJECT) + "'");
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
     if (node->object->hasName(msg->RXID_OBJECT))

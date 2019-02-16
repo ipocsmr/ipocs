@@ -8,19 +8,6 @@
 #include <avr/wdt.h>
 #include <uCRC16Lib.h>
 
-void array_to_string(const uint8_t array[], unsigned int len, char buffer[])
-{
-    for (unsigned int i = 0; i < len; i++)
-    {
-        byte nib1 = (array[i] >> 4) & 0x0F;
-        byte nib2 = (array[i] >> 0) & 0x0F;
-        buffer[i*3+0] = ' ';
-        buffer[i*3+1] = nib1  < 0xA ? '0' + nib1  : 'A' + nib1  - 0xA;
-        buffer[i*3+2] = nib2  < 0xA ? '0' + nib2  : 'A' + nib2  - 0xA;
-    }
-    buffer[len*3] = '\0';
-}
-
 const long reconnectTime = 1000;
 
 typedef void(* ipocsResetFunc) (void);
@@ -38,7 +25,8 @@ void ard::EspConnection::begin() {
     Serial3.begin(115200);
     this->packetSerial->setStream(&Serial3);
 #else
-    this->packetSerial->begin(115200);
+    Serial.begin(115200);
+    this->packetSerial->begin(&Serial);
 #endif
     this->packetSerial->setPacketHandler(&onPacketReceived);
     IPC::Message* ipcSiteData = IPC::Message::create();
@@ -57,8 +45,6 @@ void ard::EspConnection::loop() {
 
 void onPacketReceived(const uint8_t* buffer, size_t size)
 {
-  Serial.write(buffer, size);
-
   if (size == 0) {
     return;
   }
@@ -82,16 +68,12 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       }
       break; }
     case IPC::IPOCS: {
-      Log log1("incoming order");
       IPOCS::Message* ipocsMsg = IPOCS::Message::create(ipcMsg->pld);
       ObjectStore::getInstance().handleOrder(ipocsMsg);
       delete ipocsMsg;
       break; }
     case IPC::RESTART: {
-#ifdef HAVE_HWSERIAL3
-      Serial.println("Restarting...");
-      Serial.flush();
-#endif
+      LOG("Restarting...");
       wdt_enable(WDTO_15MS);  
       for(;;) { }     
       break; }
@@ -106,17 +88,10 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       break; }
   }
   delete ipcMsg;
-  //myPacketSerial.send(tempBuffer, size);
 }
 
 void ard::EspConnection::send(IPC::Message* msg, bool print) {
     uint8_t buffer[msg->RL_MESSAGE + 10];
     size_t msgSize = msg->serialize(buffer);
-    if (print) {
-        char str[100] = "";
-        array_to_string(buffer, msgSize, str);
-        LOG("ToESP: " + String(str));
-    }
-
     this->packetSerial->send(buffer, msgSize);
 }

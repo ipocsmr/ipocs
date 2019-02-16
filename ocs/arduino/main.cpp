@@ -23,16 +23,14 @@ void setup(void) {
   ard::EspConnection::instance().begin();
   #ifdef HAVE_HWSERIAL3
   Serial.begin(115200);
-  Serial.println("We have 3 serials. Use one as debug...");
+  LOG("We have 3 serials. Use one as debug...");
   #endif
 }
 
 void loop() {
   int loopStart = millis();
   ard::EspConnection::instance().loop();
-  //LOG("Loop 2");
   ObjectStore::getInstance().loop();
-  //LOG("Loop 3");
   // Make sure we're not working too fast for Arduino
   int loopEnd = millis();
   if ((loopEnd - loopStart) < MIN_LOOP_TIME) {

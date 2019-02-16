@@ -24,7 +24,6 @@ namespace esp {
         void handleRestart(bool restartArduino);
         void handleNotFound();
         void log(const String& string);
-        //void log(const uint8_t* buffer, const size_t size);
       private:
         ~Http();
         Http();

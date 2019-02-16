@@ -48,7 +48,7 @@ void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
       case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: pinToSet = this->throwRightOutput; break;
       default:
         // TODO: Send error about invalid value
-        Serial.println("Unknown command");
+        LOG("Unknown command");
         break;
     }
     digitalWrite(pinToSet, HIGH);

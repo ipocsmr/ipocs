@@ -27,10 +27,7 @@ int PointsMotor_Servo::objectInit(byte configData[])
 
   this->object.attach(configData[1]);
   this->posInput = configData[2];
-#ifdef HAVE_HWSERIAL3
-  Serial.println("  -> " + String(configData[1]) + " : "+ String(configData[2]));
-  Serial.flush();
-#endif
+  LOG("  -> " + String(configData[1]) + " : "+ String(configData[2]));
   return 3;
 }
 
