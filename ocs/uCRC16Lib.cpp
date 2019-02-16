@@ -1,12 +1,3 @@
-/**
- * Tiny and cross-device compatible CCITT CRC16 calculator library - uCRC16Lib
- *
- * @copyright Naguissa
- * @author Naguissa
- * @email naguissa@foroelectro.net
- * @version 1.0.0
- * @created 2018-04-21
- */
 #include "uCRC16Lib.h"
 
 /**
@@ -24,27 +15,18 @@ uCRC16Lib::uCRC16Lib() {}
  * @param	length	uint16_t	Length, in bytes, of data to calculate CRC16 of. Should be the same or inferior to data pointer's length.
  */
 uint16_t uCRC16Lib::calculate(const uint8_t *data_p, uint16_t length) {
-	uint8_t i;
-	uint16_t data;
-	uint16_t crc = 0xffff;
-
-	if (length == 0) {
-		return (~crc);
-	}
-
-	do {
-		for (i = 0, data = (uint16_t) 0xff & *data_p++; i < 8; i++, data >>= 1) {
-			if ((crc & 0x0001) ^ (data & 0x0001)) {
-				crc = (crc >> 1) ^ uCRC16Lib_POLYNOMIAL;
-			} else {
-				crc >>= 1;
-			}
-		}
-	} while (--length);
-	crc = ~crc;
-	data = crc;
-	crc = (crc << 8) | (data >> 8 & 0xFF);
-	return (crc);
+   int  crc;
+   char i;
+   crc = 0xFFFF;
+   do {
+      crc = crc ^ (int) *data_p++ << 8;
+      i = 8;
+      do {
+         if (crc & 0x8000)
+            crc = crc << 1 ^ 0x1021;
+         else
+            crc = crc << 1;
+      } while(--i);
+   } while (--length > 0);
+   return (crc);
 }
-
-
