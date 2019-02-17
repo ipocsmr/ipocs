@@ -61,6 +61,7 @@ void esp::Http::loop() {
 
 void esp::Http::log(const String& string) {
   String ss = string;
+  esp::ArduinoConnection::instance().log(string);
   this->webSocket->broadcastTXT(ss);
 }
 

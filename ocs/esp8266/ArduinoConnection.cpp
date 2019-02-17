@@ -71,3 +71,12 @@ void esp::ArduinoConnection::send(IPC::Message* msg) {
     size_t msgSize = msg->serialize(buffer);
     this->packetSerial->send(buffer, msgSize);
 }
+
+void esp::ArduinoConnection::log(const String& msg) {
+    IPC::Message* ipc = IPC::Message::create();
+    ipc->RT_TYPE = IPC::ILOG;
+    ipc->setPayload();
+    ipc->setPayload((uint8_t*)msg.c_str(), msg.length() + 1);
+    esp::ArduinoConnection::instance().send(ipc);
+    delete ipc;
+}

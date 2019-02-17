@@ -49,7 +49,7 @@ uint8_t IPC::Message::serialize(uint8_t buffer[])
   return this->RL_MESSAGE + 2;
 }
 
-void IPC::Message::setPayload(uint8_t* buffer, uint8_t length)
+void IPC::Message::setPayload(const uint8_t* buffer, const uint8_t length)
 {
   if (this->pld != nullptr) {
     delete (this->pld);

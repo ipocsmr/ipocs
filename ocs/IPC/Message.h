@@ -12,7 +12,8 @@ namespace IPC {
     RESTART = 0x02,
     IPOCS = 0x10,
     IPING = 0x20,
-    IPONG = 0x21
+    IPONG = 0x21,
+    ILOG = 0x30
   };
 
   class Message {
@@ -37,7 +38,7 @@ namespace IPC {
       static bool verifyChecksum(const uint8_t buffer[]);
 
       void setPayload();
-      void setPayload(uint8_t* buffer, uint8_t length);
+      void setPayload(const uint8_t* buffer, const uint8_t length);
       uint8_t* pld;
 
     private:

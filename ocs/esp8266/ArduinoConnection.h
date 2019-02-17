@@ -15,6 +15,8 @@ namespace esp {
 
             void begin();
             void loop();
+
+            void log(const String& msg);
         private:
             ArduinoConnection() {}
             SLIPPacketSerial* packetSerial;
