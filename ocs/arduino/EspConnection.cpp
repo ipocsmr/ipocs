@@ -12,6 +12,21 @@ const long reconnectTime = 1000;
 
 typedef void(* ipocsResetFunc) (void);
 
+#ifdef HAVE_HWSERIAL3
+void array_to_string(const uint8_t array[], unsigned int len, char buffer[])
+{
+    for (unsigned int i = 0; i < len; i++)
+    {
+        byte nib1 = (array[i] >> 4) & 0x0F;
+        byte nib2 = (array[i] >> 0) & 0x0F;
+        buffer[i*3+0] = ' ';
+        buffer[i*3+1] = nib1  < 0xA ? '0' + nib1  : 'A' + nib1  - 0xA;
+        buffer[i*3+2] = nib2  < 0xA ? '0' + nib2  : 'A' + nib2  - 0xA;
+    }
+    buffer[len*3] = '\0';
+}
+#endif
+
 void onPacketReceived(const uint8_t* buffer, size_t size);
 
 ard::EspConnection& ard::EspConnection::instance() {
@@ -48,6 +63,11 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   if (size == 0) {
     return;
   }
+  #ifdef HAVE_HWSERIAL3
+  char outstr[size + 1];
+  array_to_string(buffer, size, outstr);
+  LOG(String(outstr));
+  #endif
   if (!IPC::Message::verifyChecksum(buffer)) {
     LOG("Message CRC didn't match");
     return;
