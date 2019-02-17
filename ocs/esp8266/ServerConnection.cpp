@@ -2,6 +2,7 @@
 #include "Configuration.h"
 #include "../IPOCS/Message.h"
 #include "../IPOCS/Packets/ConnectionRequestPacket.h"
+#include "../IPOCS/Packets/ApplicationDataPacket.h"
 #include "../IPC/Message.h"
 #include "http.h"
 #include "ArduinoConnection.h"
@@ -39,12 +40,14 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             esp::Http::instance().log("Connecting to: " + String(ip[3]) + "." + String(ip[2]) + "." + String(ip[1]) + "." + String(ip[0]) + ":" + String(port));
             byte returnVal = this->tcp->connect(ip, port);
             if (returnVal == 1) {
+                char unitId[10];
+                sprintf(unitId, "%d", Configuration::getUnitID());
                 IPOCS::Message* msg = IPOCS::Message::create();
-                msg->RXID_OBJECT = String((char)Configuration::getUnitID());
+                msg->RXID_OBJECT = String(unitId);
                 IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
                 pkt->RM_PROTOCOL_VERSION = 0x0101;
                 char sdVersion[10];
-                sprintf(sdVersion, "%04X", Configuration::getSiteDataCrc());
+                sprintf(sdVersion, "%d", Configuration::getSiteDataCrc());
                 pkt->RXID_SITE_DATA_VERSION = String(sdVersion);
                 msg->setPacket(pkt);
                 this->send(msg);
@@ -76,7 +79,19 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             IPC::Message* ipcMsg = IPC::Message::create();
             ipcMsg->RT_TYPE = IPC::IPOCS;
             ipcMsg->setPayload(message, msg->RL_MESSAGE);
-            ArduinoConnection::instance().send(ipcMsg);
+
+            char unitId[10];
+            sprintf(unitId, "%d", Configuration::getUnitID());
+            if (msg->RXID_OBJECT == String(unitId)) {
+                if (msg->packet->RNID_PACKET == 5) {
+                    IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
+                    uint8_t dataLength = dataPkt->RL_PACKET - 5;
+                    Configuration::setSD(dataPkt->data, dataLength);
+                    esp::Http::instance().handleRestart(true);
+                }
+            } else {
+                ArduinoConnection::instance().send(ipcMsg);
+            }
             delete msg;
             delete ipcMsg;
         }
