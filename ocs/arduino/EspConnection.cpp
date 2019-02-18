@@ -63,11 +63,6 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   if (size == 0) {
     return;
   }
-  #ifdef HAVE_HWSERIAL3
-  char outstr[size + 1];
-  array_to_string(buffer, size, outstr);
-  LOG(String(outstr));
-  #endif
   if (!IPC::Message::verifyChecksum(buffer)) {
     LOG("Message CRC didn't match");
     return;
