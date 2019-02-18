@@ -23,11 +23,16 @@ void setup(void) {
   ard::EspConnection::instance().begin();
   #ifdef HAVE_HWSERIAL3
   Serial.begin(115200);
-  LOG("We have 3 serials. Use one as debug...");
+  Serial.print('r');
+  Serial.flush();
   #endif
 }
 
 void loop() {
+  #ifdef HAVE_HWSERIAL3
+  Serial.print('.');
+  Serial.flush();
+  #endif
   int loopStart = millis();
   ard::EspConnection::instance().loop();
   ObjectStore::getInstance().loop();

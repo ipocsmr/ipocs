@@ -27,7 +27,6 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
 
   this->object.attach(configData[1]);
   this->posInput = configData[2];
-  LOG("  -> " + String(configData[1]) + " : "+ String(configData[2]));
   return 3;
 }
 
@@ -35,7 +34,6 @@ void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
 {
   if (basePacket->RNID_PACKET == 10)
   {
-    LOG("throw order");
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
     switch (packet->RQ_POINTS_COMMAND)
     {

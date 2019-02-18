@@ -34,10 +34,8 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
 
 void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
 {
-  Log log1("Order MSG");
   if (basePacket->RNID_PACKET == 10)
   {
-    LOG("throw order");
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
     this->lastOrderMillis = millis();
     this->lastOrderState = packet->RQ_POINTS_COMMAND;
@@ -48,7 +46,6 @@ void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
       case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: pinToSet = this->throwRightOutput; break;
       default:
         // TODO: Send error about invalid value
-        LOG("Unknown command");
         break;
     }
     digitalWrite(pinToSet, HIGH);

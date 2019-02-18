@@ -15,7 +15,6 @@ Points::Points() {
 
 void Points::handleOrder(IPOCS::Packet* basePacket)
 {
-  Log log1("Order ID '" + String(basePacket->RNID_PACKET) + "'");
   if (basePacket->RNID_PACKET == 10) {
     if (this->frogOutput != 0) {
       digitalWrite(this->frogOutput, LOW);
@@ -40,7 +39,6 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
     ard::EspConnection::instance().send(ipcMsg, true);
     delete ipcMsg;
   } else {
-    LOG("NOT HANDLED");
     // TODO: Send alarm or something about invalid packet type.
   }
 }

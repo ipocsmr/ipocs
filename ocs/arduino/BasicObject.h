@@ -19,14 +19,13 @@ namespace IPOCS {
 
 class BasicObject {
   public:
-    void init(String objectName, const uint8_t* configData, int configDataLen);
+    void init(String& objectName, const uint8_t* configData, int configDataLen);
     virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void loop() = 0;
-    virtual bool hasName(String objectName);
-    String name() { return objectName; }
+    virtual bool hasName(const char* const objectName);
   protected:
     virtual void objectInit(const uint8_t* configData, int configDataLen) = 0;
-    String objectName;
+    char* objectName;
 };
 
 typedef BasicObject* (*initObjectFunction)();
