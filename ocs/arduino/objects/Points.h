@@ -22,7 +22,7 @@ class Points: public BasicObject {
     virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void loop();
   protected:
-    virtual void objectInit(byte configData[], int configDataLen);
+    virtual void objectInit(const uint8_t configData[], int configDataLen);
   private:
     struct PointsMotorNode {
       PointsMotor* motor;

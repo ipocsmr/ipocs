@@ -83,13 +83,13 @@ void Points::loop()
   }
 }
 
-void Points::objectInit(byte configData[], int configDataLen)
+void Points::objectInit(const uint8_t configData[], int configDataLen)
 {
   this->frogOutput = configData[0];
   if (this->frogOutput != 0) {
     pinMode(this->frogOutput, OUTPUT);
   }
-  byte* configDataCurrent = configData + 1;
+  const uint8_t* configDataCurrent = &configData[1];
   for (int index = 1; index < configDataLen; )
   {
     initPointsMotorFunction fun = NULL;

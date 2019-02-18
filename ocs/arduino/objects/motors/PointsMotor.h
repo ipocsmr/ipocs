@@ -8,7 +8,7 @@ class PointsMotor {
   public:
     virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void loop() = 0;
-    virtual int objectInit(unsigned char configData[]) = 0;
+    virtual int objectInit(const uint8_t configData[]) = 0;
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState() = 0;
 };
 

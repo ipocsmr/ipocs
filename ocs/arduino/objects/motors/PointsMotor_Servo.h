@@ -20,7 +20,7 @@ class PointsMotor_Servo: public PointsMotor {
     PointsMotor_Servo();
     virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void loop();
-    virtual int objectInit(byte configData[]);
+    virtual int objectInit(const uint8_t configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     Servo object;

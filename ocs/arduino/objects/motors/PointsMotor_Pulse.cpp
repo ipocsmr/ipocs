@@ -17,7 +17,7 @@ PointsMotor_Pulse::PointsMotor_Pulse()
 {
 }
 
-int PointsMotor_Pulse::objectInit(byte configData[])
+int PointsMotor_Pulse::objectInit(const uint8_t configData[])
 {
   this->throwLeftOutput = configData[1];
   this->throwRightOutput = configData[2];

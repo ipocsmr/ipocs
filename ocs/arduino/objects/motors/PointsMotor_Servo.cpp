@@ -19,7 +19,7 @@ PointsMotor_Servo::PointsMotor_Servo()
 {
 }
 
-int PointsMotor_Servo::objectInit(byte configData[])
+int PointsMotor_Servo::objectInit(const uint8_t configData[])
 {
   this->lastRun = millis();
   this->setPos = servoRightVal;

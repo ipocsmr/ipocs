@@ -18,7 +18,7 @@ class PointsMotor_Pulse: public PointsMotor {
     PointsMotor_Pulse();
     virtual void handleOrder(IPOCS::Packet* basePacket);
     virtual void loop();
-    virtual int objectInit(uint8_t configData[]);
+    virtual int objectInit(const uint8_t configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     int throwLeftOutput;

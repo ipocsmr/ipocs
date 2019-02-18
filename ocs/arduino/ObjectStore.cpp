@@ -1,4 +1,3 @@
-
 #include "ObjectStore.h"
 #include "EspConnection.h"
 #include "../IPOCS/Message.h"
@@ -54,7 +53,7 @@ void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
     byte sdObjectType = sd[currPos];
     byte sdObjectLength = sd[currPos + 1];
     String objectName;
-    for (uint8_t* firstChar = sd + 2; *firstChar != 0x00; firstChar++)
+    for (const uint8_t* firstChar = &sd[currPos + 2]; *firstChar != 0x00; firstChar++)
     {
       objectName += String((char)(*firstChar));
     }
@@ -62,7 +61,7 @@ void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
     uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
       BasicObject* bo = this->functions[sdObjectType]();
-      bo->init(objectName, sd + msgParsed, sdObjectLength - msgParsed);
+      bo->init(objectName, &sd[currPos + msgParsed], sdObjectLength - msgParsed);
       ObjectStore::getInstance().addObject(bo);
     }
     currPos += sdObjectLength + 1;
