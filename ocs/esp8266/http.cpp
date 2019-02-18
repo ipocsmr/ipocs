@@ -111,7 +111,7 @@ void esp::Http::index() {
   html += "'><button onClick='postIt(\"pwd\", \"/api/updatePwd\");'>Update</button></td></tr>\n";
   uint8_t siteData[200];
   uint8_t siteDataLength = Configuration::getSD(siteData, 200);
-  char str[100] = "";
+  char str[201];
   array_to_string(siteData, siteDataLength, str);
   html += "<tr><th>Site Data</th><td><input id='sd' value='";
   html += String(str);
