@@ -5,10 +5,8 @@ class String;
 
 #ifdef HAVE_HWSERIAL3
 #define LOG(msg) Serial.println(String("= ") + String(msg)); Serial.flush();
-#define LOGN(msg) Serial.print(String(msg)); Serial.flush();
 #else
 #define LOG(msg) ;
-#define LOGN(msg) ;
 #endif
 
 class Log {

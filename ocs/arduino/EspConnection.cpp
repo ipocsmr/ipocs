@@ -98,7 +98,6 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       for(;;) { }     
       break; }
     case IPC::IPING: {
-      LOGN(".");
       IPC::Message* ipcPong = IPC::Message::create();
       ipcPong->RT_TYPE = IPC::IPONG;
       ipcPong->setPayload();
@@ -106,9 +105,6 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       delete ipcPong;
       break; }
     case IPC::IPONG: {
-      break; }
-    case IPC::ILOG: {
-      LOGN((const char*)ipcMsg->pld);
       break; }
   }
   delete ipcMsg;

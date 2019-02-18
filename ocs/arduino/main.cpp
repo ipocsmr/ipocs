@@ -17,7 +17,7 @@
 #include "../IPOCS/Message.h"
 #include "log.h"
 
-#define MIN_LOOP_TIME 10
+#define MIN_LOOP_TIME 100
 
 void setup(void) {
   ard::EspConnection::instance().begin();

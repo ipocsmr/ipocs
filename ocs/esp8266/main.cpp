@@ -95,7 +95,6 @@ void loop(void)
       MDNS.notifyAPChange();
     }
   }
-  esp::ArduinoConnection::instance().log("+");
   esp::Http::instance().loop();
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);
   esp::ArduinoConnection::instance().loop();
