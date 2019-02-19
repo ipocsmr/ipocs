@@ -19,9 +19,43 @@ PointsMotor_Pulse::PointsMotor_Pulse()
 
 int PointsMotor_Pulse::objectInit(const uint8_t configData[])
 {
-  this->throwLeftOutput = configData[1];
-  this->throwRightOutput = configData[2];
-  this->posInput = configData[3];
+  this->throwLeftOutput = configData[1] - 1;
+  this->throwRightOutput = configData[2] - 1;
+  switch (configData[3]) {
+    case 1: this->posInput = A0; break;
+    case 2: this->posInput = A1; break;
+    case 3: this->posInput = A2; break;
+    case 4: this->posInput = A3; break;
+    case 5: this->posInput = A4; break;
+    case 6: this->posInput = A5; break;
+    case 7: this->posInput = A6; break;
+    case 8: this->posInput = A7; break;
+#ifdef PIN_A8
+    case 9: this->posInput = A8; break;
+#endif
+#ifdef PIN_A9
+    case 10: this->posInput = A9; break;
+#endif
+#ifdef PIN_A10
+    case 11: this->posInput = A10; break;
+#endif
+#ifdef PIN_A11
+    case 12: this->posInput = A11; break;
+#endif
+#ifdef PIN_A12
+    case 13: this->posInput = A12; break;
+#endif
+#ifdef PIN_A13
+    case 14: this->posInput = A13; break;
+#endif
+#ifdef PIN_A14
+    case 15: this->posInput = A14; break;
+#endif
+#ifdef PIN_A15
+    case 16: this->posInput = A15; break;
+#endif
+    default: this->posInput = NO_POSITION_INPUT; break;
+  }
 
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrderMillis = 0;

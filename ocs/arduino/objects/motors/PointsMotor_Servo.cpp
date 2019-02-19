@@ -5,6 +5,7 @@
 #include "../../../IPOCS/Packets/ThrowPointsPacket.h"
 #include "../../log.h"
 
+#define NO_POSITION_INPUT 0
 const int servoRightVal = 20;
 const int servoLeftVal = 150;
 const int pointStepTime = 20;
@@ -25,8 +26,42 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
   this->setPos = servoRightVal;
   this->curPos = servoRightVal;
 
-  this->object.attach(configData[1]);
-  this->posInput = configData[2];
+  this->object.attach(configData[1] - 1);
+  switch (configData[3]) {
+    case 1: this->posInput = A0; break;
+    case 2: this->posInput = A1; break;
+    case 3: this->posInput = A2; break;
+    case 4: this->posInput = A3; break;
+    case 5: this->posInput = A4; break;
+    case 6: this->posInput = A5; break;
+    case 7: this->posInput = A6; break;
+    case 8: this->posInput = A7; break;
+#ifdef PIN_A8
+    case 9: this->posInput = A8; break;
+#endif
+#ifdef PIN_A9
+    case 10: this->posInput = A9; break;
+#endif
+#ifdef PIN_A10
+    case 11: this->posInput = A10; break;
+#endif
+#ifdef PIN_A11
+    case 12: this->posInput = A11; break;
+#endif
+#ifdef PIN_A12
+    case 13: this->posInput = A12; break;
+#endif
+#ifdef PIN_A13
+    case 14: this->posInput = A13; break;
+#endif
+#ifdef PIN_A14
+    case 15: this->posInput = A14; break;
+#endif
+#ifdef PIN_A15
+    case 16: this->posInput = A15; break;
+#endif
+    default: this->posInput = NO_POSITION_INPUT; break;
+  }
   return 3;
 }
 
@@ -66,7 +101,7 @@ void PointsMotor_Servo::loop()
 IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
 {
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
-  if (this->posInput == 0) {
+  if (this->posInput == NO_POSITION_INPUT) {
     if (this->curPos == this->setPos) {
       pos = this->setPos == servoLeftVal ? IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::LEFT : IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     }
