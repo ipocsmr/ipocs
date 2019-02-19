@@ -3,7 +3,6 @@
 #define IPOCS_CONNECTIONREQESTPACKET_H
 
 #include <stdint.h>
-#include <Arduino.h>
 #include "../Packet.h"
 
 namespace IPOCS {
@@ -11,7 +10,7 @@ namespace IPOCS {
 class ConnectionRequestPacket: public Packet {
   public:
     uint16_t RM_PROTOCOL_VERSION;
-    String RXID_SITE_DATA_VERSION;
+    char* RXID_SITE_DATA_VERSION;
 
     static Packet* create();
   protected:

@@ -17,7 +17,10 @@
 #include "../IPOCS/Message.h"
 #include "log.h"
 
-#define MIN_LOOP_TIME 100
+#ifdef HAVE_HWSERIAL3
+#define PRINT_TIME 50
+unsigned long lastPrint = 0;
+#endif
 
 void setup(void) {
   ard::EspConnection::instance().begin();
@@ -25,20 +28,22 @@ void setup(void) {
   Serial.begin(115200);
   Serial.print('r');
   Serial.flush();
+  lastPrint = millis();
   #endif
 }
 
 void loop() {
-  #ifdef HAVE_HWSERIAL3
-  Serial.print('.');
-  Serial.flush();
-  #endif
   int loopStart = millis();
   ard::EspConnection::instance().loop();
   ObjectStore::getInstance().loop();
+
+#ifdef HAVE_HWSERIAL3
   // Make sure we're not working too fast for Arduino
-  int loopEnd = millis();
-  if ((loopEnd - loopStart) < MIN_LOOP_TIME) {
-    delay(MIN_LOOP_TIME - (loopEnd - loopStart));
+  unsigned long now = millis();
+  if ((now - lastPrint) >= PRINT_TIME) {
+    lastPrint = now;
+    Serial.print('.');
+    Serial.flush();
   }
+#endif
 }

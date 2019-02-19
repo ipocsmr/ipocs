@@ -37,8 +37,9 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 
 void setup(void)
 {
-  String name = "ipocs_" + String(ESP.getChipId());
-  MDNS.begin(name.c_str());
+  char name[200];
+  sprintf(name, "ipocs_%d", ESP.getChipId());
+  MDNS.begin(name);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
   WiFi.onStationModeConnected(onStationModeConnected);
@@ -65,13 +66,11 @@ void loop(void)
       connectionInitiated = millis();
       if (attemptNo < 5)
       {
-        String ssidString = Configuration::getSSID();
-        char ssid[ssidString.length() + 1];
-        ssidString.toCharArray(ssid, ssidString.length() + 1);
-        String pwdString = Configuration::getPassword();
-        char password[pwdString.length() + 1];
-        pwdString.toCharArray(password, pwdString.length() + 1);
-        esp::Http::instance().log("Connecting to SSID: " + ssidString);
+        char ssid[33];
+        Configuration::getSSID(ssid);
+        char password[61];
+        Configuration::getPassword(password);
+        esp::Http::instance().log("Connecting to SSID: " + String(ssid));
         WiFi.mode(WIFI_STA);
         WiFi.begin(ssid, password);
         attemptNo++;

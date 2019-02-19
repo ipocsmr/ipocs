@@ -7,7 +7,7 @@
 IPC::Message::Message()
 {
   this->RL_MESSAGE = 0;
-  this->pld = nullptr;
+  this->pld = new uint8_t[0];
 }
 
 IPC::Message* IPC::Message::create()
@@ -21,7 +21,6 @@ IPC::Message* IPC::Message::create(const uint8_t buffer[])
   msg->RL_MESSAGE = buffer[2];
   msg->RT_TYPE = (IPC::RT_TYPE)buffer[3];
   msg->pld = new uint8_t[msg->RL_MESSAGE - 2];
-
   for (uint8_t i = 0; i < msg->RL_MESSAGE - 2; i++) {
     msg->pld[i] = buffer[i + 4];
   }
@@ -51,7 +50,7 @@ uint8_t IPC::Message::serialize(uint8_t buffer[])
 
 void IPC::Message::setPayload(uint8_t* buffer, uint8_t length)
 {
-  if (this->pld != nullptr) {
+  if (this->pld != NULL) {
     delete (this->pld);
   }
   this->RL_MESSAGE = length + 2;
@@ -63,7 +62,7 @@ void IPC::Message::setPayload(uint8_t* buffer, uint8_t length)
 
 void IPC::Message::setPayload()
 {
-  if (this->pld != nullptr) {
+  if (this->pld != NULL) {
     delete (this->pld);
   }
   this->RL_MESSAGE = 2;
@@ -72,7 +71,7 @@ void IPC::Message::setPayload()
 
 IPC::Message::~Message()
 {
-  if (this->pld != nullptr) {
+  if (this->pld != NULL) {
     delete (this->pld);
   }
 }

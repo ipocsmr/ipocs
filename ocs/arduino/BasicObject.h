@@ -11,7 +11,6 @@
 #define BASICOBJECT_H
 
 #include <stdint.h>
-#include <WString.h>
 
 namespace IPOCS {
   class Packet;
@@ -19,7 +18,7 @@ namespace IPOCS {
 
 class BasicObject {
   public:
-    void init(String& objectName, const uint8_t* configData, int configDataLen);
+    void init(const char objectName[], const uint8_t* configData, int configDataLen);
     virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void loop() = 0;
     virtual bool hasName(const char* const objectName);

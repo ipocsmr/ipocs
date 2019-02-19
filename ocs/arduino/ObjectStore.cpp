@@ -38,7 +38,7 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
 {
   for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
   {
-    if (node->object->hasName(msg->RXID_OBJECT))
+    if (node->object->hasName(msg->getObject()))
     {
       node->object->handleOrder(msg->packet);
     }
@@ -52,13 +52,12 @@ void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
   {
     byte sdObjectType = sd[currPos];
     byte sdObjectLength = sd[currPos + 1];
-    String objectName;
-    for (const uint8_t* firstChar = &sd[currPos + 2]; *firstChar != 0x00; firstChar++)
-    {
-      objectName += String((char)(*firstChar));
-    }
+
+    size_t nameLength = strlen((const char* const)(sd + currPos + 2));
+    char objectName[nameLength + 1];
+    strcpy(objectName, (const char* const)(sd + currPos + 2));
     // 1 byte for object type + object length + object name + null byte
-    uint8_t msgParsed = 1 + 1 + objectName.length() + 1;
+    uint8_t msgParsed = 1 + 1 + nameLength + 1;
     if (sdObjectType < 10 && this->functions[sdObjectType] != NULL) {
       BasicObject* bo = this->functions[sdObjectType]();
       bo->init(objectName, &sd[currPos + msgParsed], sdObjectLength - msgParsed);

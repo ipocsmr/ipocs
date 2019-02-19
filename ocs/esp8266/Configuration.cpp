@@ -2,7 +2,6 @@
 
 #include <EEPROM.h>
 #include <ESP8266WiFi.h>
-#include <WString.h>
 #include <uCRC16Lib.h>
 
 uint16_t Configuration::getUnitID()
@@ -18,46 +17,38 @@ void Configuration::setUnitID(uint16_t unitID)
   EEPROM.commit();
 }
 
-String Configuration::getSSID() {
-  String toReturn;
+size_t Configuration::getSSID(char ssid[]) {
   for (uint16_t i = 0; i < 33; i++) {
-    uint8_t data = EEPROM.read(i + 2);
-    if (data == 0) {
-      break;
-    }
-    toReturn += char(data);
+    ssid[i] = EEPROM.read(i + 2);
   }
-  return toReturn;
+  ssid[32] = 0; // Force null termination for uninitialized cards
+  return strlen(ssid);
 }
 
-void Configuration::setSSID(String ssid)
+void Configuration::setSSID(const char ssid[])
 {
-  for (uint16_t i = 0; i < ssid.length(); i++) {
+  for (uint16_t i = 0; i < strlen(ssid); i++) {
     EEPROM.write(i + 2, ssid[i]);
   }
-  EEPROM.write(ssid.length() + 2 , 0);
+  EEPROM.write(strlen(ssid) + 2 , 0);
   EEPROM.commit();
 }
 
-String Configuration::getPassword()
+size_t Configuration::getPassword(char pwd[])
 {
-  String toReturn;
-  for (uint16_t i = 0; i < 63; i++) {
-    uint8_t data = EEPROM.read(i + 36);
-    if (data == 0) {
-      break;
-    }
-    toReturn += char(data);
+  for (uint16_t i = 0; i < 61; i++) {
+    pwd[i] = EEPROM.read(i + 36);
   }
-  return toReturn;
+  pwd[61] = 0; // Force null termination for uninitialized cards
+  return strlen(pwd);
 }
 
-void Configuration::setPassword(String pwd)
+void Configuration::setPassword(const char pwd[])
 {
-  for (uint16_t i = 0; i < pwd.length(); i++) {
+  for (uint16_t i = 0; i < strlen(pwd); i++) {
     EEPROM.write(i + 36, pwd[i]);
   }
-  EEPROM.write(pwd.length() + 36, 0);
+  EEPROM.write(strlen(pwd) + 36, 0);
   EEPROM.commit();
 }
 

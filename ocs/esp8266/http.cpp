@@ -103,17 +103,23 @@ void esp::Http::index() {
   html += Configuration::getUnitID();
   html += "'><button onClick='postIt(\"unitId\", \"/api/updateUnitId\");'>Update</button></td></tr>\n";
   html += "<tr><th>SSID</th><td><input id='ssid' value='";
-  html += Configuration::getSSID();
+  char ssid[33];
+  Configuration::getSSID(ssid);
+  html += String(ssid);
   html +="'><button onClick='postIt(\"ssid\", \"/api/updateSsid\");'>Update</button></td></tr>\n";
   html += "<tr><th>PWD</th><td><input id='pwd' value='";
-  html += Configuration::getPassword();
+  char password[61];
+  Configuration::getPassword(password);
+  html += String(password);
   html += "'><button onClick='postIt(\"pwd\", \"/api/updatePwd\");'>Update</button></td></tr>\n";
   uint8_t siteData[200];
   uint8_t siteDataLength = Configuration::getSD(siteData, 200);
-  char str[201];
+  char str[700];
   array_to_string(siteData, siteDataLength, str);
   html += "<tr><th>Site Data</th><td><input id='sd' value='";
-  html += String(str);
+  String sdStr = str;
+  sdStr.trim();
+  html += sdStr;
   html += "'><button onClick='postIt(\"sd\", \"/api/updateSd\");'>Update</button></td></tr>\n";
   html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/restartESP\");'>Restart WiFi</button></td></tr>\n";
   html += "<tr><th>&nbsp;</th><td><button onClick='postIt(\"hidden\", \"/api/restartArduino\");'>Restart Arduino</button></td></tr>\n";
@@ -130,14 +136,16 @@ void esp::Http::handleUnitIdUpdate() {
 }
 
 void esp::Http::handleSsidUpdate() {
-  this->log("New SSID: " + this->server->arg("ssid"));
-  Configuration::setSSID(this->server->arg("ssid"));
+  String ssid = this->server->arg("ssid");
+  this->log("New SSID: " + ssid);
+  Configuration::setSSID(ssid.c_str());
   this->server->send(200);
 }
 
 void esp::Http::handlePwdUpdate() {
-  this->log("New PWD: " + this->server->arg("pwd"));
-  Configuration::setPassword(this->server->arg("pwd"));
+  String pwd = this->server->arg("pwd");
+  this->log("New PWD: " + pwd);
+  Configuration::setPassword(pwd.c_str());
   this->server->send(200);
 }
 

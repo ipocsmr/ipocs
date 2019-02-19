@@ -1,10 +1,10 @@
-
 #include "BasicObject.h"
+#include <string.h>
 
-void BasicObject::init(String& objectName, const uint8_t* configData, int configDataLen)
+void BasicObject::init(const char objectName[], const uint8_t* configData, int configDataLen)
 {
-  this->objectName = new char[objectName.length() + 1];
-  objectName.toCharArray(this->objectName, objectName.length() + 1);
+  this->objectName = new char[strlen(objectName) + 1];
+  strcpy(this->objectName, objectName);
   this->objectInit(configData, configDataLen);
 }
 

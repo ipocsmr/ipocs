@@ -25,16 +25,15 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
     }
   } else if (basePacket->RNID_PACKET == 7) {
     IPOCS::Message* ipocsMsg = IPOCS::Message::create();
-    ipocsMsg->RXID_OBJECT = this->objectName;
+    ipocsMsg->setObject(this->objectName);
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = this->lastSentState;
     ipocsMsg->setPacket(pkt);
     IPC::Message* ipcMsg = IPC::Message::create();
     ipcMsg->RT_TYPE = IPC::IPOCS;
-    uint8_t message[ipocsMsg->RL_MESSAGE + 10];
-    ipocsMsg->serialize(message);
-    ipcMsg->setPayload();
-    ipcMsg->setPayload(message, ipocsMsg->RL_MESSAGE);
+    uint8_t message[100];
+    uint8_t size = ipocsMsg->serialize(message);
+    ipcMsg->setPayload(message, size);
     delete ipocsMsg;
     ard::EspConnection::instance().send(ipcMsg, true);
     delete ipcMsg;
@@ -63,16 +62,16 @@ void Points::loop()
     }
 
     IPOCS::Message* ipocsMsg = IPOCS::Message::create();
-    ipocsMsg->RXID_OBJECT = this->objectName;
+    ipocsMsg->setObject(this->objectName);
     IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
     pkt->RQ_POINTS_STATE = allState;
     ipocsMsg->setPacket(pkt);
 
     IPC::Message* ipcMsg = IPC::Message::create();
     ipcMsg->RT_TYPE = IPC::IPOCS;
-    uint8_t message[ipocsMsg->RL_MESSAGE + 10];
-    ipocsMsg->serialize(message);
-    ipcMsg->setPayload(message, ipocsMsg->RL_MESSAGE);
+    uint8_t message[100];
+    uint8_t size = ipocsMsg->serialize(message);
+    ipcMsg->setPayload(message, size);
     delete ipocsMsg;
 
     ard::EspConnection::instance().send(ipcMsg);

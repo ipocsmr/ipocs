@@ -3,7 +3,6 @@
 #define IPOCS_MESSAGE_H
 
 #include <stdint.h>
-#include <Arduino.h>
 
 namespace IPOCS {
 
@@ -12,9 +11,13 @@ class Packet;
 class Message {
   public:
     uint8_t RL_MESSAGE;
-    String RXID_OBJECT;
-
+  private:
+    char* RXID_OBJECT;
+  public:
     ~Message();
+
+    void setObject(const char* const RXID_OBJECT);
+    const char* const getObject() { return RXID_OBJECT; }
 
     static Message* create();
     static Message* create(uint8_t buffer[]);

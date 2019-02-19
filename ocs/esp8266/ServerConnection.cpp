@@ -43,12 +43,12 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
                 char unitId[10];
                 sprintf(unitId, "%d", Configuration::getUnitID());
                 IPOCS::Message* msg = IPOCS::Message::create();
-                msg->RXID_OBJECT = String(unitId);
+                msg->setObject(unitId);
                 IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
                 pkt->RM_PROTOCOL_VERSION = 0x0101;
                 char sdVersion[10];
                 sprintf(sdVersion, "%d", Configuration::getSiteDataCrc());
-                pkt->RXID_SITE_DATA_VERSION = String(sdVersion);
+                pkt->RXID_SITE_DATA_VERSION = sdVersion;
                 msg->setPacket(pkt);
                 this->send(msg);
                 delete msg;
@@ -82,7 +82,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
 
             char unitId[10];
             sprintf(unitId, "%d", Configuration::getUnitID());
-            if (msg->RXID_OBJECT == String(unitId)) {
+            if (strcmp(msg->getObject(), unitId) == 0) {
                 if (msg->packet->RNID_PACKET == 5) {
                     IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
                     uint8_t dataLength = dataPkt->RL_PACKET - 5;
