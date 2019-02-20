@@ -26,7 +26,7 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
   this->setPos = servoRightVal;
   this->curPos = servoRightVal;
 
-  this->object.attach(configData[1] - 1);
+  this->object.attach(configData[1] + 1);
   switch (configData[3]) {
     case 1: this->posInput = A0; break;
     case 2: this->posInput = A1; break;
