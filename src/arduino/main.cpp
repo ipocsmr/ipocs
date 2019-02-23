@@ -33,10 +33,8 @@ void setup(void) {
 }
 
 void loop() {
-  int loopStart = millis();
   ard::EspConnection::instance().loop();
   ObjectStore::getInstance().loop();
-
 #ifdef HAVE_HWSERIAL3
   // Make sure we're not working too fast for Arduino
   unsigned long now = millis();
