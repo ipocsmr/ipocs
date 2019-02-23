@@ -13,7 +13,6 @@ esp::ArduinoConnection& esp::ArduinoConnection::instance() {
 }
 
 void esp::ArduinoConnection::begin() {
-    pinMode(LED_BUILTIN, OUTPUT);
     Serial.begin(115200);
     this->packetSerial = new SLIPPacketSerial();
     this->packetSerial->setStream(&Serial);
@@ -44,7 +43,6 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
         uint8_t siteDataLength = Configuration::getSD(siteData, 200);
         ipcSiteData->setPayload(siteData, siteDataLength);
       } else {
-        digitalWrite(LED_BUILTIN, LOW);
       }
       esp::ArduinoConnection::instance().send(ipcSiteData);
       delete ipcSiteData;
