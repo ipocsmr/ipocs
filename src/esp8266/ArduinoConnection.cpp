@@ -14,8 +14,9 @@ esp::ArduinoConnection& esp::ArduinoConnection::instance() {
 
 void esp::ArduinoConnection::begin() {
     pinMode(LED_BUILTIN, OUTPUT);
+    Serial.begin(115200);
     this->packetSerial = new SLIPPacketSerial();
-    this->packetSerial->begin(115200);
+    this->packetSerial->setStream(&Serial);
     this->packetSerial->setPacketHandler(&onPacketReceived);
 }
 

@@ -26,7 +26,7 @@ void ard::EspConnection::begin() {
     this->packetSerial->setStream(&Serial3);
 #else
     Serial.begin(115200);
-    this->packetSerial->begin(&Serial);
+    this->packetSerial->setStream(&Serial);
 #endif
     this->packetSerial->setPacketHandler(&onPacketReceived);
     IPC::Message* ipcSiteData = IPC::Message::create();
