@@ -7,14 +7,18 @@
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiClient.h>
+#include <list>
 
 #define MIN_LOOP_TIME 100
+
+std::list<WiFiEventHandler> wifiHandlers;
 
 int onStationModeConnected(const WiFiEventStationModeConnected& change) {
   return 0;
 }
 
 int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
+  esp::ServerConnection::instance().disconnect();
   return 0;
 }
 
@@ -34,7 +38,6 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
   return 0;
 }
 
-
 void setup(void)
 {
   char name[20];
@@ -42,13 +45,12 @@ void setup(void)
   MDNS.begin(name);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
-  WiFi.onStationModeConnected(onStationModeConnected);
-  WiFi.onStationModeDisconnected(onStationModeDisconnected);
-  WiFi.onStationModeGotIP(onStationModeGotIP);
-  WiFi.onSoftAPModeStationConnected(onSoftAPModeStationConnected);
-  WiFi.onSoftAPModeStationDisconnected(onSoftAPModeStationDisconnected);
+  //WiFi.onStationModeConnected(onStationModeConnected);
+  wifiHandlers.push_back(WiFi.onStationModeDisconnected(onStationModeDisconnected));
+  wifiHandlers.push_back(WiFi.onStationModeGotIP(onStationModeGotIP));
+  //WiFi.onSoftAPModeStationConnected(onSoftAPModeStationConnected);
+  //WiFi.onSoftAPModeStationDisconnected(onSoftAPModeStationDisconnected);
 }
-
 
 int connectionInitiated = 0;
 int attemptNo = 0;

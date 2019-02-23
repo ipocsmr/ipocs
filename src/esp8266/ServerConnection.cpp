@@ -24,6 +24,10 @@ esp::ServerConnection& esp::ServerConnection::instance() {
     return _instance;
 }
 
+void esp::ServerConnection::disconnect() {
+    this->tcp->stop();
+}
+
 void esp::ServerConnection::loop(bool isWiFiConnected) {
     if (!isWiFiConnected) {
         if (this->tcp->connected()) {
