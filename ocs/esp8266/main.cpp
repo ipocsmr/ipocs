@@ -37,8 +37,8 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 
 void setup(void)
 {
-  char name[200];
-  sprintf(name, "ipocs_%d", ESP.getChipId());
+  char name[20];
+  sprintf(name, "ipocs_%d", Configuration::getUnitID());
   MDNS.begin(name);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
@@ -64,7 +64,7 @@ void loop(void)
     {
       MDNS.notifyAPChange();
       connectionInitiated = millis();
-      if (attemptNo < 5)
+      if (attemptNo < 2)
       {
         char ssid[33];
         Configuration::getSSID(ssid);
@@ -75,11 +75,13 @@ void loop(void)
         WiFi.begin(ssid, password);
         attemptNo++;
       }
-      else if (attemptNo < 6)
+      else if (attemptNo < 3)
       {
         esp::Http::instance().log(String("Starting SoftAP"));
         WiFi.mode(WIFI_AP);
-        WiFi.softAP("IPOCS_Default");
+        char name[20];
+        sprintf(name, "IPOCS_%04X", Configuration::getUnitID());
+        WiFi.softAP(name);
         attemptNo = 6;
       }
     }
