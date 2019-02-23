@@ -74,6 +74,9 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
 
 void esp::Http::index() {
   auto ip = WiFi.localIP();
+  if (ip[0] == 0) {
+    ip = WiFi.softAPIP();
+  }
   String ip_str = String(ip[0]) + "." + ip[1] + "." + ip[2] + "." + ip[3];
   String html = "<html>\n";
   html += "<script>\n";
