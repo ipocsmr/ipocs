@@ -13,12 +13,16 @@
 
 std::list<WiFiEventHandler> wifiHandlers;
 
+unsigned long connectionInitiated = 0;
+int attemptNo = 0;
+
 int onStationModeConnected(const WiFiEventStationModeConnected& change) {
   return 0;
 }
 
 int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
   esp::ServerConnection::instance().disconnect();
+  connectionInitiated = millis();
   return 0;
 }
 
@@ -47,18 +51,14 @@ void setup(void)
   esp::ArduinoConnection::instance().begin();
   //WiFi.onStationModeConnected(onStationModeConnected);
   wifiHandlers.push_back(WiFi.onStationModeDisconnected(onStationModeDisconnected));
-  wifiHandlers.push_back(WiFi.onStationModeGotIP(onStationModeGotIP));
+  //wifiHandlers.push_back(WiFi.onStationModeGotIP(onStationModeGotIP));
   //WiFi.onSoftAPModeStationConnected(onSoftAPModeStationConnected);
   //WiFi.onSoftAPModeStationDisconnected(onSoftAPModeStationDisconnected);
 }
 
-int connectionInitiated = 0;
-int attemptNo = 0;
-
 void loop(void)
 {
   MDNS.update();
-  int loopStart = millis();
   int wiFiStatus = WiFi.status();
   if (wiFiStatus != WL_CONNECTED)
   {
@@ -101,11 +101,6 @@ void loop(void)
   esp::Http::instance().loop();
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);
   esp::ArduinoConnection::instance().loop();
-  // Make sure we're not working too fast for ESP
-  int loopEnd = millis();
-  if ((loopEnd - loopStart) < MIN_LOOP_TIME) {
-    delay(MIN_LOOP_TIME - (loopEnd - loopStart));
-  }
 
   IPC::Message* ipcPing = IPC::Message::create();
   ipcPing->RT_TYPE = IPC::IPING;
