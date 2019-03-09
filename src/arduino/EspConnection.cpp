@@ -61,7 +61,11 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   if (size == 0) {
     return;
   }
-  if (!IPC::Message::verifyChecksum(buffer)) {
+  if (size < 4 || (!IPC::Message::verifyChecksum(buffer))) {
+#ifdef HAVE_HWSERIAL3
+    Serial.write(buffer, size);
+    Serial.flush();
+#endif
     return;
   }
   // Make a temporary buffer.
@@ -88,8 +92,8 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       break; }
     case IPC::IPING: {
 #ifdef HAVE_HWSERIAL3
-    Serial.print("p");
-    Serial.flush();
+      Serial.print("p");
+      Serial.flush();
 #endif
       IPC::Message* ipcPong = IPC::Message::create();
       ipcPong->RT_TYPE = IPC::IPONG;

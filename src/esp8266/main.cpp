@@ -10,11 +10,14 @@
 #include <list>
 
 #define MIN_LOOP_TIME 100
+#define PING_TIME 1000
+#define WIFI_CONNECT 10000
 
 std::list<WiFiEventHandler> wifiHandlers;
 
 unsigned long connectionInitiated = 0;
 int attemptNo = 0;
+unsigned long lastPing = 0;
 
 int onStationModeConnected(const WiFiEventStationModeConnected& change) {
   return 0;
@@ -54,6 +57,8 @@ void setup(void)
   //wifiHandlers.push_back(WiFi.onStationModeGotIP(onStationModeGotIP));
   //WiFi.onSoftAPModeStationConnected(onSoftAPModeStationConnected);
   //WiFi.onSoftAPModeStationDisconnected(onSoftAPModeStationDisconnected);
+  lastPing = millis();
+  connectionInitiated = millis() - WIFI_CONNECT;
 }
 
 void loop(void)
@@ -62,7 +67,7 @@ void loop(void)
   int wiFiStatus = WiFi.status();
   if (wiFiStatus != WL_CONNECTED)
   {
-    if ((millis() - connectionInitiated) > 10000)
+    if ((millis() - connectionInitiated) >= WIFI_CONNECT)
     {
       MDNS.notifyAPChange();
       connectionInitiated = millis();
@@ -90,7 +95,7 @@ void loop(void)
   }
   else
   {
-    if (attemptNo == 6 && connectionInitiated != 0 && (millis() - connectionInitiated) <= 10000)
+    if (attemptNo == 6 && connectionInitiated != 0 && (millis() - connectionInitiated) <= WIFI_CONNECT)
     {
       attemptNo = 0;
       connectionInitiated = 0;
@@ -102,9 +107,13 @@ void loop(void)
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);
   esp::ArduinoConnection::instance().loop();
 
-  IPC::Message* ipcPing = IPC::Message::create();
-  ipcPing->RT_TYPE = IPC::IPING;
-  ipcPing->setPayload();
-  esp::ArduinoConnection::instance().send(ipcPing);
-  delete ipcPing;
+  unsigned long loopEnd = millis();
+  if ((loopEnd - lastPing) >= PING_TIME) {
+    lastPing = loopEnd;
+    IPC::Message* ipcPing = IPC::Message::create();
+    ipcPing->RT_TYPE = IPC::IPING;
+    ipcPing->setPayload();
+    esp::ArduinoConnection::instance().send(ipcPing);
+    delete ipcPing;
+  }
 }

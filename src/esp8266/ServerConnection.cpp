@@ -44,6 +44,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             esp::Http::instance().log("Connecting to: " + String(ip[3]) + "." + String(ip[2]) + "." + String(ip[1]) + "." + String(ip[0]) + ":" + String(port));
             byte returnVal = this->tcp->connect(ip, port);
             if (returnVal == 1) {
+                this->tcp->keepAlive(5, 1, 4);
                 char unitId[10];
                 sprintf(unitId, "%d", Configuration::getUnitID());
                 IPOCS::Message* msg = IPOCS::Message::create();

@@ -2,11 +2,9 @@
 #define HTTPHANDLER_H
 
 #include <stdint.h>
-#include <WebSockets.h>
 
 class ESP8266WebServer;
 class ESP8266HTTPUpdateServer;
-class WebSocketsServer;
 class String;
 
 namespace esp {
@@ -28,9 +26,7 @@ namespace esp {
         ~Http();
         Http();
         ESP8266WebServer* server;
-        WebSocketsServer* webSocket;
         ESP8266HTTPUpdateServer* updateServer;
-        void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
     };
 }
 

@@ -12,6 +12,8 @@ namespace esp {
         public:
             static ArduinoConnection& instance();
             void send(IPC::Message* msg);
+            void send(const uint8_t* const msg, const size_t length);
+            void send(const char* const msg, const size_t length);
 
             void begin();
             void loop();

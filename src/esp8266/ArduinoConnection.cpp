@@ -65,6 +65,14 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   delete ipcMsg;
 }
 
+void esp::ArduinoConnection::send(const uint8_t* const msg, const size_t length) {
+  this->packetSerial->send(msg, length);
+}
+
+void esp::ArduinoConnection::send(const char* const msg, const size_t length) {
+  this->send((const char* const)msg, length);
+}
+
 void esp::ArduinoConnection::send(IPC::Message* msg) {
     uint8_t buffer[msg->RL_MESSAGE + 2];
     size_t msgSize = msg->serialize(buffer);

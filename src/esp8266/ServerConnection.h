@@ -1,7 +1,7 @@
 #ifndef ESP8266_SERVERCONNECTION_H
 #define ESP8266_SERVERCONNECTION_H
 
-class Client;
+class WiFiClient;
 namespace IPOCS {
     class Message;
 };
@@ -16,7 +16,7 @@ namespace esp {
         private:
             ServerConnection();
             virtual ~ServerConnection();
-            Client* tcp;
+            WiFiClient* tcp;
     };
 };
 
