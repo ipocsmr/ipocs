@@ -26,6 +26,7 @@ class ObjectStore {
     void registerType(int typeId, initObjectFunction fun);
     void handleOrder(IPOCS::Message* msg);
     void setup(const uint8_t* sd, uint8_t sdLength);
+    void sendAllStatus();
     void loop();
   private:
     struct ObjectStoreNode {

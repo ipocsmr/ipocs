@@ -103,6 +103,9 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       break; }
     case IPC::IPONG: {
       break; }
+    case IPC::CESTAB: {
+      ObjectStore::getInstance().sendAllStatus();
+      break; }
   }
   delete ipcMsg;
 }

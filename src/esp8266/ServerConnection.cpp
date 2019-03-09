@@ -57,6 +57,12 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
                 msg->setPacket(pkt);
                 this->send(msg);
                 delete msg;
+
+                IPC::Message* ipcPing = IPC::Message::create();
+                ipcPing->RT_TYPE = IPC::CESTAB;
+                ipcPing->setPayload();
+                esp::ArduinoConnection::instance().send(ipcPing);
+                delete ipcPing;
             } else { }
         }
     } else {

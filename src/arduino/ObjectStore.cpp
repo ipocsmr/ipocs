@@ -67,6 +67,13 @@ void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
   }
 }
 
+void ObjectStore::sendAllStatus() {
+  for (ObjectStoreNode* node = this->first; node != NULL; node = node->next)
+  {
+    node->object->sendStatus();
+  }
+}
+
 void ObjectStore::registerType(int typeId, initObjectFunction fun)
 {
   this->functions[typeId] = fun;

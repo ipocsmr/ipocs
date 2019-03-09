@@ -24,22 +24,16 @@ void Points::handleOrder(IPOCS::Packet* basePacket)
       currentNode->motor->handleOrder(basePacket);
     }
   } else if (basePacket->RNID_PACKET == 7) {
-    IPOCS::Message* ipocsMsg = IPOCS::Message::create();
-    ipocsMsg->setObject(this->objectName);
-    IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
-    pkt->RQ_POINTS_STATE = this->lastSentState;
-    ipocsMsg->setPacket(pkt);
-    IPC::Message* ipcMsg = IPC::Message::create();
-    ipcMsg->RT_TYPE = IPC::IPOCS;
-    uint8_t message[100];
-    uint8_t size = ipocsMsg->serialize(message);
-    ipcMsg->setPayload(message, size);
-    delete ipocsMsg;
-    ard::EspConnection::instance().send(ipcMsg, true);
-    delete ipcMsg;
+    this->sendStatus();
   } else {
     // TODO: Send alarm or something about invalid packet type.
   }
+}
+
+IPOCS::Packet* Points::getStatusPacket() {
+  IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
+  pkt->RQ_POINTS_STATE = this->lastSentState;
+  return pkt;
 }
 
 void Points::loop()
@@ -60,23 +54,8 @@ void Points::loop()
     if (this->frogOutput != 0 && allState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT) {
       digitalWrite(this->frogOutput, HIGH);
     }
-
-    IPOCS::Message* ipocsMsg = IPOCS::Message::create();
-    ipocsMsg->setObject(this->objectName);
-    IPOCS::PointsStatusPacket* pkt = (IPOCS::PointsStatusPacket*)IPOCS::PointsStatusPacket::create();
-    pkt->RQ_POINTS_STATE = allState;
-    ipocsMsg->setPacket(pkt);
-
-    IPC::Message* ipcMsg = IPC::Message::create();
-    ipcMsg->RT_TYPE = IPC::IPOCS;
-    uint8_t message[100];
-    uint8_t size = ipocsMsg->serialize(message);
-    ipcMsg->setPayload(message, size);
-    delete ipocsMsg;
-
-    ard::EspConnection::instance().send(ipcMsg);
-    delete ipcMsg;
     this->lastSentState = allState;
+    this->sendStatus();
   }
 }
 

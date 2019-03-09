@@ -22,7 +22,9 @@ class BasicObject {
     virtual void handleOrder(IPOCS::Packet* basePacket) = 0;
     virtual void loop() = 0;
     virtual bool hasName(const char* const objectName);
+    void sendStatus();
   protected:
+    virtual IPOCS::Packet* getStatusPacket() = 0;
     virtual void objectInit(const uint8_t* configData, int configDataLen) = 0;
     char* objectName;
 };
