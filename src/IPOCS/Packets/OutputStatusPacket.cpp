@@ -23,6 +23,6 @@ uint8_t IPOCS::OutputStatusPacket::serializeSpecific(uint8_t buffer[])
 }
 
 __attribute__((constructor))
-static void initialize_packet_throwpoints() {
+static void initialize_packet_outputstatus() {
   IPOCS::Packet::registerCreator(22, &IPOCS::OutputStatusPacket::create);
 }

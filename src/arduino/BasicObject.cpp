@@ -27,4 +27,5 @@ void BasicObject::sendStatus() {
     ipcMsg->setPayload(message, size);
     delete ipocsMsg;
     ard::EspConnection::instance().send(ipcMsg, true);
+    delete ipcMsg;
 }
