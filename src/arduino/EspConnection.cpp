@@ -104,6 +104,10 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
     case IPC::IPONG: {
       break; }
     case IPC::CESTAB: {
+#ifdef HAVE_HWSERIAL3
+      Serial.print('u');
+      Serial.flush();
+#endif
       ObjectStore::getInstance().sendAllStatus();
       break; }
   }
