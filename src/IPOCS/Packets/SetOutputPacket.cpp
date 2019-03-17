@@ -21,7 +21,7 @@ uint8_t IPOCS::SetOutputPacket::serializeSpecific(uint8_t buffer[])
 {
   buffer[0] = this->RQ_OUTPUT_COMMAND;
   buffer[1] = this->RT_DURATION >> 8;
-  buffer[2] = this->RT_DURATION & 0x100;
+  buffer[2] = this->RT_DURATION & 0xFF;
   return 3;
 }
 
