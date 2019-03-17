@@ -36,6 +36,10 @@ void Input::loop() {
         this->sendStatus();
       }
     } else {
+      changeFirstRegisteredTime = 0;
+    }
+  } else if (lastSentState == IPOCS::InputStatusPacket::E_RQ_INPUT_STATE::ON) {
+    if (data == HIGH) {
       uint16_t cTime = millis();
       if (changeFirstRegisteredTime == 0) {
         changeFirstRegisteredTime = cTime;
@@ -45,6 +49,8 @@ void Input::loop() {
         lastSentState = IPOCS::InputStatusPacket::E_RQ_INPUT_STATE::OFF;
         this->sendStatus();
       }
+    } else {
+      changeFirstRegisteredTime = 0;
     }
   }
 }
