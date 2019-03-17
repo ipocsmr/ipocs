@@ -2,10 +2,11 @@
 #include "EspConnection.h"
 #include "../IPOCS/Message.h"
 #include "../IPOCS/Packets/ApplicationDataPacket.h"
+#include "objects/NeoPixelManager.h"
 
 ObjectStore::ObjectStore()
 {
-  memset(this->functions, '\0', 20);
+  memset(this->functions, '\0', 30);
   this->first = NULL;
   this->last = NULL;
   this->basicObjectCount = 0;
@@ -62,13 +63,14 @@ void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
     strcpy(objectName, (const char* const)(sd + currPos + 2));
     // 1 byte for object type + object length + object name + null byte
     uint8_t msgParsed = 1 + 1 + nameLength + 1;
-    if (sdObjectType < 20 && this->functions[sdObjectType] != NULL) {
+    if (sdObjectType < 30 && this->functions[sdObjectType] != NULL) {
       BasicObject* bo = this->functions[sdObjectType]();
       bo->init(objectName, &sd[currPos + msgParsed], sdObjectLength - msgParsed);
       ObjectStore::getInstance().addObject(bo);
     }
     currPos += sdObjectLength + 1;
   }
+  NeoPixelManager::getInstance().setup();
 }
 
 void ObjectStore::sendAllStatus() {

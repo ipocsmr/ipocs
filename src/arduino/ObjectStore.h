@@ -35,7 +35,7 @@ class ObjectStore {
       BasicObject* object;
     };
 
-    initObjectFunction functions[20];
+    initObjectFunction functions[30];
     struct ObjectStoreNode* first;
     struct ObjectStoreNode* last;
     long basicObjectCount;
