@@ -46,7 +46,7 @@ IPOCS::Packet* Output::getStatusPacket() {
 }
 
 void Output::loop() {
-  if ((offDelay != 0) && (millis() - this->lastOrderTime) >= offDelay) {
+  if ((offDelay != 0) && (millis() - this->lastOrderTime) >= this->offDelay * 100) {
     this->offDelay = 0;
     digitalWrite(this->outputPin, LOW);
     if (this->lastSentState == IPOCS::OutputStatusPacket::E_RQ_OUTPUT_STATE::ON) {
