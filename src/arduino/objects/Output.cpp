@@ -71,5 +71,5 @@ static BasicObject* createOutput()
 
 __attribute__((constructor))
 static void initialize_output() {
-  ObjectStore::getInstance().registerType(2, &createOutput);
+  ObjectStore::getInstance().registerType(10, &createOutput);
 }
