@@ -61,7 +61,7 @@ void Input::objectInit(const uint8_t configData[], int configDataLen)
   this->debounceTime = configData[1];
   this->releaseHoldTime = configData[2];
 
-  pinMode(this->inputPin, INPUT);
+  pinMode(this->inputPin, INPUT_PULLUP);
 }
 
 static BasicObject* createInput()
