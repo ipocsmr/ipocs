@@ -60,7 +60,8 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
 #endif
     default: this->posInput = NO_POSITION_INPUT; break;
   }
-  return 2;
+  this->invertStatus = (configData[2] == 1);
+  return 3;
 }
 
 void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
@@ -114,6 +115,9 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
     } else {
       // TODO Add 10s timeout from last recieved order
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+    }
+    if (this->invertStatus && pos <= 2) {
+      pos = (IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE)((pos % 2) + 1);
     }
   }
   return pos;

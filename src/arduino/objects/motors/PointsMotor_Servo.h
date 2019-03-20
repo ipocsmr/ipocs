@@ -23,6 +23,7 @@ class PointsMotor_Servo: public PointsMotor {
     virtual int objectInit(const uint8_t configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
+    bool invertStatus;
     Servo object;
     uint8_t posInput;
 

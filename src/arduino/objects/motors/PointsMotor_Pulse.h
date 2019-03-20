@@ -21,6 +21,7 @@ class PointsMotor_Pulse: public PointsMotor {
     virtual int objectInit(const uint8_t configData[]);
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
+    bool invertStatus;
     uint8_t throwLeftOutput;
     uint8_t throwRightOutput;
     uint8_t posInput;

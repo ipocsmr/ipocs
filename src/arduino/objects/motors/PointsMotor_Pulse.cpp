@@ -54,13 +54,14 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
 #endif
     default: this->posInput = NO_POSITION_INPUT; break;
   }
+  this->invertStatus = (configData[3] == 1);
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrderMillis = 0;
   pinMode(this->throwLeftOutput, OUTPUT);
   pinMode(this->throwRightOutput, OUTPUT);
   digitalWrite(this->throwLeftOutput, LOW);
   digitalWrite(this->throwRightOutput, LOW);
-  return 3;
+  return 4;
 }
 
 void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
@@ -130,6 +131,9 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
     } else {
       // TODO Add 10s timeout from last recieved order
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+    }
+    if (this->invertStatus && pos <= 2) {
+      pos = (IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE)((pos % 2) + 1);
     }
   }
   return pos;
