@@ -4,12 +4,13 @@
 #include "PointsMotor_Pulse.h"
 #include "../../log.h"
 
-const int NO_POSITION_INPUT = 0;
+const uint8_t NO_POSITION_INPUT = 0;
+const unsigned long MOVEMENT_TIMEOUT = 100000;
 
 // Left state is less than or equal to this value.
-const int StateLeft = 399;
+const uint16_t StateLeft = 399;
 // Right state is larger than or equal to this value.
-const int StateRight = 799;
+const uint16_t StateRight = 799;
 
 PointsMotor_Pulse::PointsMotor_Pulse()
 {
@@ -119,9 +120,9 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
           // TODO: Send error about invalid value
           break;
       }
+    } else {
+      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
     }
-    else pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
-    // TODO Add 10s timeout
   } else {
     int posValue = analogRead(this->posInput);
     if (posValue <= StateLeft) {
@@ -129,8 +130,11 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
     } else if (posValue >= StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     } else {
-      // TODO Add 10s timeout from last recieved order
-      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+      if (millis() - this->lastOrderMillis <= 10000) {
+        pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+      } else {
+        pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
+      }
     }
     if (this->invertStatus && pos <= 2) {
       pos = (IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE)((pos % 2) + 1);

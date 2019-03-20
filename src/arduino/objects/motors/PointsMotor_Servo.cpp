@@ -21,6 +21,7 @@ PointsMotor_Servo::PointsMotor_Servo()
 int PointsMotor_Servo::objectInit(const uint8_t configData[])
 {
   this->lastRun = millis();
+  this->lastOrderMillis = 0;
   this->setPos = servoRightVal;
   this->curPos = servoRightVal;
 
@@ -92,7 +93,6 @@ void PointsMotor_Servo::loop()
     // And then move
     this->curPos += direction;
     this->object.write(this->curPos);
-
     // And possibly notify on reaching end position (obsolete if we have an input to look at)
   }
 }
@@ -103,9 +103,9 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
   if (this->posInput == NO_POSITION_INPUT) {
     if (this->curPos == this->setPos) {
       pos = this->setPos == servoLeftVal ? IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::LEFT : IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
+    } else {
+      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
     }
-    else pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
-    // TODO Add 10s timeout
   } else {
     int posValue = analogRead(this->posInput);
     if (posValue <= StateLeft) {
@@ -113,8 +113,11 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
     } else if (posValue >= StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     } else {
-      // TODO Add 10s timeout from last recieved order
-      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+      if (millis() - this->lastOrderMillis <= 10000) {
+        pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
+      } else {
+        pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
+      }
     }
     if (this->invertStatus && pos <= 2) {
       pos = (IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE)((pos % 2) + 1);

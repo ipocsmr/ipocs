@@ -30,6 +30,7 @@ class PointsMotor_Servo: public PointsMotor {
     int setPos;
     int curPos;
     unsigned long lastRun;
+    unsigned long lastOrderMillis;
 };
 
 #endif
