@@ -24,11 +24,11 @@ class PointsMotor_Servo: public PointsMotor {
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     Servo object;
-    int posInput;
+    uint8_t posInput;
 
     int setPos;
     int curPos;
-    long lastRun;
+    unsigned long lastRun;
 };
 
 #endif

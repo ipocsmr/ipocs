@@ -11,10 +11,8 @@ const int servoLeftVal = 150;
 const int pointStepTime = 20;
 // Left state is less than or equal to this value.
 const int StateLeft = 399;
-// Moving/Out Of Control state is less than or equal to this value (Out Of Control after 10s)
-const int StateMoving = 799;
-// Right state is less than or equal to this value.
-const int StateRight = 1023;
+// Right state is larger than or equal to this value.
+const int StateRight = 799;
 
 PointsMotor_Servo::PointsMotor_Servo()
 {
@@ -26,8 +24,8 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
   this->setPos = servoRightVal;
   this->curPos = servoRightVal;
 
-  this->object.attach(configData[1] + 1);
-  switch (configData[3]) {
+  this->object.attach(configData[0] + 1);
+  switch (configData[1]) {
     case 1: this->posInput = A0; break;
     case 2: this->posInput = A1; break;
     case 3: this->posInput = A2; break;
@@ -62,7 +60,7 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
 #endif
     default: this->posInput = NO_POSITION_INPUT; break;
   }
-  return 3;
+  return 2;
 }
 
 void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
@@ -109,13 +107,13 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Servo::getState()
     // TODO Add 10s timeout
   } else {
     int posValue = analogRead(this->posInput);
-    if (posValue < StateLeft) {
+    if (posValue <= StateLeft) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::LEFT;
-    } else if (posValue < StateMoving) {
-      // TODO Add 10s timeout
-      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
-    } else if (posValue < StateRight) {
+    } else if (posValue >= StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
+    } else {
+      // TODO Add 10s timeout from last recieved order
+      pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
     }
   }
   return pos;
