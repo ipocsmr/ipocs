@@ -47,9 +47,9 @@ void ObjectStore::handleOrder(IPOCS::Message* msg)
 
 void ObjectStore::setup(const uint8_t* sd, uint8_t sdLength)
 {
-#ifdef HAVE_HWSERIAL3
-  Serial.print('s');
-  Serial.flush();
+#ifdef HAVE_HWSERIAL1
+  Serial1.print('s');
+  Serial1.flush();
 #endif
   byte currPos = 0;
   while (sdLength > currPos)

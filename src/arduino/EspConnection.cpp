@@ -21,13 +21,8 @@ ard::EspConnection& ard::EspConnection::instance() {
 
 void ard::EspConnection::begin() {
     this->packetSerial = new SLIPPacketSerial();
-#ifdef HAVE_HWSERIAL3
-    Serial3.begin(115200);
-    this->packetSerial->setStream(&Serial3);
-#else
     Serial.begin(115200);
     this->packetSerial->setStream(&Serial);
-#endif
     this->packetSerial->setPacketHandler(&onPacketReceived);
     IPC::Message* ipcSiteData = IPC::Message::create();
     ipcSiteData->RT_TYPE = IPC::STARTED;
@@ -62,9 +57,9 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
     return;
   }
   if (size < 4 || (!IPC::Message::verifyChecksum(buffer))) {
-#ifdef HAVE_HWSERIAL3
-    Serial.write(buffer, size);
-    Serial.flush();
+#ifdef HAVE_HWSERIAL1
+    Serial1.write(buffer, size);
+    Serial1.flush();
 #endif
     return;
   }
@@ -91,9 +86,9 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       for(;;) { }     
       break; }
     case IPC::IPING: {
-#ifdef HAVE_HWSERIAL3
-      Serial.print("p");
-      Serial.flush();
+#ifdef HAVE_HWSERIAL1
+      Serial1.print('p');
+      Serial1.flush();
 #endif
       IPC::Message* ipcPong = IPC::Message::create();
       ipcPong->RT_TYPE = IPC::IPONG;
@@ -104,9 +99,9 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
     case IPC::IPONG: {
       break; }
     case IPC::CESTAB: {
-#ifdef HAVE_HWSERIAL3
-      Serial.print('u');
-      Serial.flush();
+#ifdef HAVE_HWSERIAL1
+      Serial1.print('u');
+      Serial1.flush();
 #endif
       ObjectStore::getInstance().sendAllStatus();
       break; }
