@@ -17,17 +17,17 @@
 #include "../IPOCS/Message.h"
 #include "log.h"
 
-#ifdef HAVE_HWSERIAL3
+#ifdef HAVE_HWSERIAL1
 #define PRINT_TIME 50
 unsigned long lastPrint = 0;
 #endif
 
 void setup(void) {
   ard::EspConnection::instance().begin();
-  #ifdef HAVE_HWSERIAL3
-  Serial.begin(115200);
-  Serial.print('r');
-  Serial.flush();
+  #ifdef HAVE_HWSERIAL1
+  Serial1.begin(115200);
+  Serial1.print('r');
+  Serial1.flush();
   lastPrint = millis();
   #endif
 }
@@ -35,13 +35,13 @@ void setup(void) {
 void loop() {
   ard::EspConnection::instance().loop();
   ObjectStore::getInstance().loop();
-#ifdef HAVE_HWSERIAL3
+#ifdef HAVE_HWSERIAL1
   // Make sure we're not working too fast for Arduino
   unsigned long now = millis();
   if ((now - lastPrint) >= PRINT_TIME) {
     lastPrint = now;
-    Serial.print('.');
-    Serial.flush();
+    Serial1.print('.');
+    Serial1.flush();
   }
 #endif
 }
