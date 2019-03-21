@@ -89,26 +89,19 @@ void PointsMotor_Pulse::loop()
 {
   if (this->lastOrderMillis == 0)
     return;
-  IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE currentState = this->getState();
-  bool bSetLow = ((this->posInput >= NO_POSITION_INPUT) &&
-    (currentState != IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING)) ||
-    (currentState == IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING);
-  if (bSetLow)
+  unsigned int timeToKeepActive =  500U;
+  if (millis() - this->lastOrderMillis > timeToKeepActive)
   {
-    unsigned int timeToKeepActive =  500U;
-    if (millis() - this->lastOrderMillis > timeToKeepActive)
-    {
-      digitalWrite(this->throwLeftOutput, LOW);
-      digitalWrite(this->throwRightOutput, LOW);
-      this->lastOrderMillis = 0;
-    }
+    digitalWrite(this->throwLeftOutput, LOW);
+    digitalWrite(this->throwRightOutput, LOW);
+    this->lastOrderMillis = 0;
   }
 }
 
 IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
 {
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
-  if (this->posInput >= NO_POSITION_INPUT) {
+  if (this->posInput == NO_POSITION_INPUT) {
     unsigned int timeToKeepActive =  500U;
     if (millis() - this->lastOrderMillis > timeToKeepActive)
     {
