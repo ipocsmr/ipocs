@@ -123,7 +123,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
     } else if (posValue >= StateRight) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::RIGHT;
     } else {
-      if (millis() - this->lastOrderMillis <= 10000) {
+      if (millis() - this->lastOrderMillis >= 10000) {
         pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
       } else {
         pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
