@@ -1,4 +1,7 @@
 
+#include <avr/io.h>
+#include <avr/interrupt.h>
+#include <util/delay.h>
 #include "EspConnection.h"
 #include "ObjectStore.h"
 #include "../IPC/Message.h"
@@ -82,8 +85,11 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       delete ipocsMsg;
       break; }
     case IPC::RESTART: {
-      wdt_enable(WDTO_15MS);  
-      for(;;) { }     
+        typedef void (*do_reboot_t)(void);
+        const do_reboot_t do_reboot = (do_reboot_t)((FLASHEND - 511) >> 1);
+
+        cli(); TCCR0A = TCCR1A = TCCR2A = 0; // make sure interrupts are off and timers are reset.
+        do_reboot();
       break; }
     case IPC::IPING: {
 #ifdef HAVE_HWSERIAL1

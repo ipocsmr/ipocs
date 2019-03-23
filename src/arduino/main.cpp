@@ -16,6 +16,7 @@
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 #include "log.h"
+#include <avr/wdt.h>
 
 #ifdef HAVE_HWSERIAL1
 #define PRINT_TIME 50
@@ -23,6 +24,8 @@ unsigned long lastPrint = 0;
 #endif
 
 void setup(void) {
+  MCUSR = ~(1 << WDRF); // allow us to disable WD
+  wdt_disable();
   ard::EspConnection::instance().begin();
   #ifdef HAVE_HWSERIAL1
   Serial1.begin(115200);
