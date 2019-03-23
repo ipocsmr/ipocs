@@ -16,6 +16,7 @@ namespace esp {
             void send(const char* const msg, const size_t length);
 
             void begin();
+            void end();
             void loop();
         private:
             ArduinoConnection() {}
