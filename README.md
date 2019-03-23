@@ -37,3 +37,9 @@ Once the ESP has been flashed once, subsequent flashed can be done over WiFi.
 The ESP will try to connect to a configured WiFi (even if none has been configured).
 Once it has failed 4 times it will set up a SoftAP and respond on IP 192.168.4.1.
 Use this to make initial configuration
+
+DIP 5+6+7 ON, all others OFF
+Command to upload to ESP using cable> platformio run -e esp8266_serial -t upload
+DIP 3+4 ON, all others OFF
+Command to upload to uno using cable> platformio run -e uno -t upload
+When done set DIP 1+2 ON, all others OFF 
