@@ -4,6 +4,7 @@
 #include "../IPC/Message.h"
 #include <WString.h>
 #include <ESP8266WebServer.h>
+#include <WebSocketsServer.h>
 #include <ESP8266HTTPUpdateServer.h>
 #include <ArduinoOTA.h>
 #include <uCRC16Lib.h>
@@ -40,6 +41,9 @@ esp::Http::Http() {
     this->server->onNotFound([this]() { this->handleNotFound(); });
     this->updateServer = new ESP8266HTTPUpdateServer(80);
     this->updateServer->setup(this->server);
+    this->webSocket = new WebSocketsServer(81);
+    this->webSocket->begin();
+    this->webSocket->onEvent(std::bind(&Http::webSocketEvent, this, _1, _2, _3, _4));
     this->server->begin();
     ArduinoOTA.begin();
 }
@@ -51,14 +55,29 @@ void esp::Http::setup() {
 
 void esp::Http::loop() {
   ArduinoOTA.handle();
+  this->webSocket->loop();
   this->server->handleClient();
 }
 
 void esp::Http::log(const String& string) {
+  String ss = string;
+  this->webSocket->broadcastTXT(ss);
 }
 
+void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
+  if (type == WStype_TEXT){
+    String incoming;
+    for(size_t i = 0; i < length; i++) incoming += ((char) payload[i]);
+    this->log(incoming);
+  }
+}
 
 void esp::Http::index() {
+  auto ip = WiFi.localIP();
+  if (ip[0] == 0) {
+    ip = WiFi.softAPIP();
+  }
+  String ip_str = String(ip[0]) + "." + ip[1] + "." + ip[2] + "." + ip[3];
   String html = "<html>\n";
   html += "<script>\n";
   html += "function postIt(elem, url) {\n";
@@ -68,6 +87,18 @@ void esp::Http::index() {
   html += "  var input = document.getElementById(elem);\n";
   html += "  xhr.send(elem + '=' + encodeURIComponent(input.value));\n";
   html += "}\n";
+  html += "function start() {";
+  html += "  var connection = new WebSocket('ws://";
+  html += ip_str;
+  html += ":81');";
+  html += "  connection.onmessage = function (e) {\n";
+  html += "    console.log('Server: ', e.data);\n";
+  html += "  };";
+  html += "  connection.onclose = function() {";
+  html += "    start();";
+  html += "  };";
+  html += "}";
+  html += "start();";
   html += "</script>\n";
   html += "<body><h1>IPOCS Configuration Tool</h1><br />\n";
   html += "<table>\n";
@@ -127,6 +158,7 @@ void esp::Http::handleRestart(bool restartArduino) {
     ESP.eraseConfig();
     ESP.reset();
   } else {
+    this->log("Resetting arduino");
     IPC::Message *message = IPC::Message::create();
     message->RT_TYPE = IPC::RESTART;
     message->setPayload();
