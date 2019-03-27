@@ -43,6 +43,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   IPC::Message* ipcMsg = IPC::Message::create(buffer);
   switch(ipcMsg->RT_TYPE) {
     case IPC::STARTED: {
+      esp::Http::instance().setArduinoVersion(ipcMsg->pld);
       IPC::Message* ipcSiteData = IPC::Message::create();
       ipcSiteData->RT_TYPE = IPC::SITEDATA;
       ipcSiteData->setPayload();

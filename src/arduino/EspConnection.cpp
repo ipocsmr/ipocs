@@ -11,6 +11,10 @@
 #include <avr/wdt.h>
 #include <uCRC16Lib.h>
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define VERSION_STRING TOSTRING(VERSION_RAW)
+
 const long reconnectTime = 1000;
 
 typedef void(* ipocsResetFunc) (void);
@@ -29,8 +33,12 @@ void ard::EspConnection::begin() {
     this->packetSerial->setPacketHandler(&onPacketReceived);
     IPC::Message* ipcSiteData = IPC::Message::create();
     ipcSiteData->RT_TYPE = IPC::STARTED;
-    uint8_t siteData[0];
-    ipcSiteData->setPayload(siteData, 0);
+    uint8_t siteData[strlen(VERSION_STRING) + 1];
+    memcpy(siteData, VERSION_STRING, strlen(VERSION_STRING) + 1);
+#ifdef HAVE_HWSERIAL1
+    Serial1.println("Version: " + String(VERSION_STRING));
+#endif
+    ipcSiteData->setPayload(siteData, strlen(VERSION_STRING) + 1);
     uint8_t buffer[ipcSiteData->RL_MESSAGE];
     size_t msgSize = ipcSiteData->serialize(buffer);
     this->packetSerial->send(buffer, msgSize);

@@ -30,6 +30,7 @@ esp::Http& esp::Http::instance() {
 }
 
 esp::Http::Http() {
+    this->arduinoVersion = new char[1] { 0 };
     this->server = new ESP8266WebServer();
     this->server->on("/", [this]() { this->index(); });
     this->server->on("/api/updateUnitId", HTTP_POST, [this]() { this->handleUnitIdUpdate(); });
@@ -72,6 +73,10 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
   }
 }
 
+#define STRINGIFY(x) #x
+#define TOSTRING(x) STRINGIFY(x)
+#define VERSION_STRING TOSTRING(VERSION_RAW)
+
 void esp::Http::index() {
   auto ip = WiFi.localIP();
   if (ip[0] == 0) {
@@ -101,6 +106,12 @@ void esp::Http::index() {
   html += "start();";
   html += "</script>\n";
   html += "<body><h1>IPOCS Configuration Tool</h1><br />\n";
+  html += "Arduino Software Version: ";
+  html += this->arduinoVersion;
+  html += "<br />\n";
+  html += "ESP8266 Software Version: ";
+  html += VERSION_STRING;
+  html += "<br />\n";
   html += "<table>\n";
   html += "<tr><th>UnitID</th><td><input id='unitId' value='";
   html += Configuration::getUnitID();
@@ -204,4 +215,10 @@ void esp::Http::handleNotFound() {
     message += " " + this->server->argName(i) + ": " + this->server->arg(i) + "\n";
   }
   this->server->send(404, "text/plain", message);
+}
+
+void esp::Http::setArduinoVersion(uint8_t* arduinoVersion) {
+  delete this->arduinoVersion;
+  this->arduinoVersion = new char[strlen((const char*)arduinoVersion) + 1];
+  memcpy(this->arduinoVersion, arduinoVersion, strlen((const char*)arduinoVersion) + 1);
 }

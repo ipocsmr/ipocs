@@ -26,13 +26,13 @@ unsigned long lastPrint = 0;
 void setup(void) {
   MCUSR = ~(1 << WDRF); // allow us to disable WD
   wdt_disable();
-  ard::EspConnection::instance().begin();
   #ifdef HAVE_HWSERIAL1
   Serial1.begin(115200);
   Serial1.print('r');
   Serial1.flush();
   lastPrint = millis();
   #endif
+  ard::EspConnection::instance().begin();
 }
 
 void loop() {
