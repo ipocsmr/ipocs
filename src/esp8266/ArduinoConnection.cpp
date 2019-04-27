@@ -55,6 +55,13 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       }
       esp::ArduinoConnection::instance().send(ipcSiteData);
       delete ipcSiteData;
+      if (esp::ServerConnection::instance().connected()) {
+        IPC::Message* ipcConnected = IPC::Message::create();
+        ipcConnected->RT_TYPE = IPC::CESTAB;
+        ipcConnected->setPayload();
+        esp::ArduinoConnection::instance().send(ipcConnected);
+        delete ipcConnected;
+      }
       break; }
     case IPC::SITEDATA: {
       // Not handled in ESP

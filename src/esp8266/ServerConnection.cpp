@@ -24,6 +24,10 @@ esp::ServerConnection& esp::ServerConnection::instance() {
     return _instance;
 }
 
+bool esp::ServerConnection::connected() {
+    return this->tcp->connected();
+}
+
 void esp::ServerConnection::disconnect() {
     this->tcp->stop();
 }

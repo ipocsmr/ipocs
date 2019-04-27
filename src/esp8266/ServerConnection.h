@@ -13,6 +13,7 @@ namespace esp {
             void loop(bool isWiFiConnected);
             void send(IPOCS::Message* msg);
             void disconnect();
+            bool connected();
         private:
             ServerConnection();
             virtual ~ServerConnection();
