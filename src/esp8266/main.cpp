@@ -49,6 +49,9 @@ void setup(void)
 {
   char name[20];
   sprintf(name, "ipocs_%d", Configuration::getUnitID());
+  char wifi_name[20];
+  sprintf(wifi_name, "ipocs_%03d_%06X", Configuration::getUnitID(), ESP.getChipId());
+  WiFi.hostname(wifi_name);
   MDNS.begin(name);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
