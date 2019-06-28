@@ -72,8 +72,8 @@ void PointsMotor_Servo::handleOrder(IPOCS::Packet* basePacket)
     IPOCS::ThrowPointsPacket* packet = (IPOCS::ThrowPointsPacket*)basePacket;
     switch (packet->RQ_POINTS_COMMAND)
     {
-      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: this->setPos = servoRightVal; break;
-      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: this->setPos = servoLeftVal; break;
+      case IPOCS::ThrowPointsPacket::DIVERT_RIGHT: this->setPos = (!invertStatus ? servoRightVal : servoLeftVal); break;
+      case IPOCS::ThrowPointsPacket::DIVERT_LEFT: this->setPos = (!invertStatus ? servoLeftVal : servoRightVal); break;
       default:
         // TODO: Send error about invalid value
         break;
