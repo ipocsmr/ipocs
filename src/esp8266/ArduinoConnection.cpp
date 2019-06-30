@@ -5,6 +5,7 @@
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 
+#define QUIET_TIMEOUT 1000
 void onPacketReceived(const uint8_t* buffer, size_t size);
 
 esp::ArduinoConnection& esp::ArduinoConnection::instance() {
@@ -13,19 +14,21 @@ esp::ArduinoConnection& esp::ArduinoConnection::instance() {
 }
 
 void esp::ArduinoConnection::begin() {
+    this->m_ulLastMsg = millis();
+    if (this->packetSerial != nullptr) {
+      delete this->packetSerial;
+    } 
     Serial.begin(115200);
     this->packetSerial = new SLIPPacketSerial();
     this->packetSerial->setStream(&Serial);
     this->packetSerial->setPacketHandler(&onPacketReceived);
 }
 
-void esp::ArduinoConnection::end() {
-  SLIPPacketSerial* ps = this->packetSerial;
-  this->packetSerial = nullptr;
-  delete ps;
-}
-
 void esp::ArduinoConnection::loop() {
+  unsigned long ulCurrentTime = millis();
+  if (ulCurrentTime - this->m_ulLastMsg >= QUIET_TIMEOUT) {
+    this->begin();
+  }
   if (this->packetSerial != nullptr) {
     this->packetSerial->update();
   }
@@ -39,6 +42,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   if (!IPC::Message::verifyChecksum(buffer)) {
     esp::Http::instance().log("Message CRC didn't match");
   }
+  esp::ArduinoConnection::instance().m_ulLastMsg = millis();
   // Make a temporary buffer.
   IPC::Message* ipcMsg = IPC::Message::create(buffer);
   switch(ipcMsg->RT_TYPE) {

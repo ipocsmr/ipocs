@@ -25,9 +25,11 @@ namespace ard {
       void loop();
       
       void send(IPC::Message* msg, bool print = true);
+
+      unsigned long m_ulLastMsg = 0;
     private:
       EspConnection() {}
-      SLIPPacketSerial* packetSerial;
+      SLIPPacketSerial* packetSerial = nullptr;
   };
 };
 

@@ -14,8 +14,7 @@
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define VERSION_STRING TOSTRING(VERSION_RAW)
-
-const long reconnectTime = 1000;
+#define QUIET_TIMEOUT 1000
 
 typedef void(* ipocsResetFunc) (void);
 
@@ -27,6 +26,10 @@ ard::EspConnection& ard::EspConnection::instance() {
 }
 
 void ard::EspConnection::begin() {
+    this->m_ulLastMsg = millis();
+    if (this->packetSerial != nullptr) {
+      delete this->packetSerial;
+    }
     this->packetSerial = new SLIPPacketSerial();
     Serial.begin(115200);
     this->packetSerial->setStream(&Serial);
@@ -46,7 +49,11 @@ void ard::EspConnection::begin() {
 }
 
 void ard::EspConnection::loop() {
-    this->packetSerial->update();
+  unsigned long ulCurrentTime = millis();
+  if (ulCurrentTime - this->m_ulLastMsg >= QUIET_TIMEOUT) {
+    this->begin();
+  }
+  this->packetSerial->update();
 }
 
 void array_to_string(const uint8_t array[], unsigned int len, char buffer[])
@@ -74,6 +81,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
 #endif
     return;
   }
+  ard::EspConnection::instance().m_ulLastMsg = millis();
   // Make a temporary buffer.
   IPC::Message* ipcMsg = IPC::Message::create(buffer);
   switch(ipcMsg->RT_TYPE) {
