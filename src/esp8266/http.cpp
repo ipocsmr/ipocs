@@ -37,7 +37,14 @@ esp::Http::Http() {
     this->server->on("/api/updateSsid", HTTP_POST, [this]() { this->handleSsidUpdate(); });
     this->server->on("/api/updatePwd", HTTP_POST, [this]() { this->handlePwdUpdate(); });
     this->server->on("/api/updateSd", HTTP_POST, [this]() { this->handleSiteDataUpdate(); });
+    this->server->on("/api/applyWiFi", HTTP_POST, [this]() { this->handleApplyWiFi(); });
     this->server->on("/api/restartESP", HTTP_POST, [this]() { this->handleRestart(false); });
+    this->server->on("/api/resetESP", HTTP_POST, [this]() {
+      wifi_station_disconnect();
+      ESP.eraseConfig();
+      this->handleRestart(false);
+    });
+
     this->server->on("/api/restartArduino", HTTP_POST, [this]() { this->handleRestart(true); });
     this->server->onNotFound([this]() { this->handleNotFound(); });
     this->updateServer = new ESP8266HTTPUpdateServer(80);
@@ -135,12 +142,25 @@ void esp::Http::index() {
   sdStr.trim();
   html += sdStr;
   html += "'><button onClick='postIt(\"sd\", \"/api/updateSd\");'>Update</button></td></tr>\n";
-  html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/restartESP\");'>Restart WiFi</button></td></tr>\n";
+  html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/applyWiFi\");'>Apply WiFi changes</button></td></tr>\n";
+  html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/restartESP\");'>Restart ESP</button></td></tr>\n";
   html += "<tr><th>&nbsp;</th><td><button onClick='postIt(\"hidden\", \"/api/restartArduino\");'>Restart Arduino</button></td></tr>\n";
+  html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/resetESP\");'>Reset WiFi</button> (WARNING: This erases WiFi configuration)</td></tr>\n";
   html += "</table>\n";
   html += "<a href='/update'>Update</a>";
   html += "</body></html>\n";
   this->server->send(200, "text/html", html);
+}
+
+void esp::Http::handleApplyWiFi() {
+  char ssid[33];
+  Configuration::getSSID(ssid);
+  char password[61];
+  Configuration::getPassword(password);
+  esp::Http::instance().log("Connecting to SSID: " + String(ssid));
+  WiFi.disconnect();
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
 }
 
 void esp::Http::handleUnitIdUpdate() {
@@ -165,8 +185,6 @@ void esp::Http::handlePwdUpdate() {
 
 void esp::Http::handleRestart(bool restartArduino) {
   if (!restartArduino) {
-    wifi_station_disconnect();
-    ESP.eraseConfig();
     ESP.reset();
   } else {
     this->log("Resetting arduino");
