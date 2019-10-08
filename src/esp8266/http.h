@@ -20,6 +20,7 @@ namespace esp {
         void handleUnitIdUpdate();
         void handleSsidUpdate();
         void handlePwdUpdate();
+        void handleApplyWiFi();
         void handleSiteDataUpdate();
         void handleRestart(bool restartArduino);
         void handleNotFound();
