@@ -117,7 +117,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::MOVING;
     }
   } else {
-    int posValue = analogRead(this->posInput);
+    uint16_t posValue = analogRead(this->posInput);
     if (posValue <= StateLeft) {
       pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::LEFT;
     } else if (posValue >= StateRight) {
