@@ -50,6 +50,7 @@ void setup(void)
   sprintf(name, "ipocs_%d", Configuration::getUnitID());
   char wifi_name[20];
   sprintf(wifi_name, "ipocs_%03d_%06X", Configuration::getUnitID(), ESP.getChipId());
+  WiFi.setOutputPower(20.5);
   WiFi.hostname(wifi_name);
   MDNS.begin(name);
   esp::Http::instance().setup();
