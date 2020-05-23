@@ -15,7 +15,14 @@
 
 std::list<WiFiEventHandler> wifiHandlers;
 
+enum EWiFiMode {
+  None,
+  Normal,
+  AP
+};
+
 unsigned long connectionInitiated = 0;
+enum EWiFiMode wifiMode = None;
 int attemptNo = 0;
 unsigned long lastPing = 0;
 
@@ -57,7 +64,6 @@ void setup(void)
   esp::ArduinoConnection::instance().begin();
   wifiHandlers.push_back(WiFi.onStationModeDisconnected(onStationModeDisconnected));
   lastPing = millis();
-  connectionInitiated = 0;
 }
 
 void setupWiFi(void) {
@@ -79,22 +85,26 @@ void loop(void)
   MDNS.update();
   int wiFiStatus = WiFi.status();
 
+  if (wifiMode == None) {
+    connectionInitiated = millis();
+    wifiMode = Normal;
+    setupWiFi();
+  }
   if (wiFiStatus != WL_CONNECTED)
   {
-    if (connectionInitiated == 0)
+    if (wifiMode == Normal)
     {
-      connectionInitiated = millis();
-      setupWiFi();
-    }
-    if ((millis() - connectionInitiated) >= WIFI_CONNECT)
-    {
-      // WiFi failed to reconnect - go into soft AP mode
-      WiFi.mode(WIFI_AP);
-      char name[20];
-      sprintf(name, "IPOCS_%04X", Configuration::getUnitID());
-      WiFi.softAP(name);
-      connectionInitiated = 0;
-      delay(500); // Let the AP settle
+      if ((millis() - connectionInitiated) >= WIFI_CONNECT)
+      {
+        // WiFi failed to reconnect - go into soft AP mode
+        WiFi.mode(WIFI_AP);
+        char name[20];
+        sprintf(name, "IPOCS_%04X", Configuration::getUnitID());
+        WiFi.softAP(name);
+        connectionInitiated = 0;
+        wifiMode = AP;
+        delay(500); // Let the AP settle
+      }
     }
   }
   else
