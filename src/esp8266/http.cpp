@@ -3,10 +3,6 @@
 #include "ArduinoConnection.h"
 #include "../IPC/Message.h"
 #include <WString.h>
-#include <ESP8266WebServer.h>
-#include <WebSocketsServer.h>
-#include <ESP8266HTTPUpdateServer.h>
-#include <ArduinoOTA.h>
 #include <uCRC16Lib.h>
 
 using namespace std::placeholders;

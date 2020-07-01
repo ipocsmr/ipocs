@@ -3,10 +3,11 @@
 
 #include <stdint.h>
 #include <WebSockets.h>
+#include <ESP8266WebServer.h>
+#include <WebSocketsServer.h>
+#include <ESP8266HTTPUpdateServer.h>
+#include <ArduinoOTA.h>
 
-class WebSocketsServer;
-class ESP8266WebServer;
-class ESP8266HTTPUpdateServer;
 class String;
 
 namespace esp {
