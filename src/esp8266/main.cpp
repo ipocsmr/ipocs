@@ -92,7 +92,7 @@ void loop(void)
   if (wifiMode == None) {
     connectionInitiated = millis();
     wifiMode = Normal;
-    esp::LedControl::instance().setState(BLINK_MS100);
+    esp::LedControl::instance().setState(BLINK, 100);
     setupWiFi();
   }
   if (wiFiStatus != WL_CONNECTED)
@@ -101,7 +101,7 @@ void loop(void)
     {
       if (connectionInitiated != 0 && (millis() - connectionInitiated) >= WIFI_CONNECT)
       {
-        esp::LedControl::instance().setState(BLINK_MS500);
+        esp::LedControl::instance().setState(BLINK, 500);
         // WiFi failed to reconnect - go into soft AP mode
         WiFi.mode(WIFI_AP);
         char name[20];
@@ -117,7 +117,7 @@ void loop(void)
   {
     if (connectionInitiated != 0)
     {
-      esp::LedControl::instance().setState(ON);
+      esp::LedControl::instance().setState(BLINK, 1000);
       // WiFi connected. Don't care if it's AP or Station mode.
       connectionInitiated = 0;
       esp::Http::instance().log(String("IP address: ") + WiFi.localIP().toString());

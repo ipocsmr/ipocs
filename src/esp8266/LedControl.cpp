@@ -21,7 +21,6 @@ void esp::LedControl::loop() {
   unsigned long ulCurrentTime = millis();
   if (ulCurrentTime - this->m_ulLastLoop >= this->m_ulKeepStateFor) {
     enum LedState newState = OFF; // = this->m_ledState == OFF ? ON : OFF;
-    this->m_ulKeepStateFor = 100;
     switch (this->m_controlState) {
       case ON:
         newState = ON;
@@ -29,20 +28,12 @@ void esp::LedControl::loop() {
       case OFF:
         newState = OFF;
         break;
-      case BLINK_MS100:
+      case BLINK:
         if (this->m_ledState == OFF) {
           newState = ON;
         } else {
           newState = OFF;
         }
-        break;
-      case BLINK_MS500:
-        if (this->m_ledState == OFF) {
-          newState = ON;
-        } else {
-          newState = OFF;
-        }
-        this->m_ulKeepStateFor = 500;
         break;
     }
     digitalWrite(LED_PIN, newState == ON ? HIGH : LOW);
@@ -51,6 +42,7 @@ void esp::LedControl::loop() {
   }
 }
 
-void esp::LedControl::setState(enum LedState newState) {
+void esp::LedControl::setState(enum LedState newState, uint16_t interval) {
   this->m_controlState = newState;
+  this->m_ulKeepStateFor = interval;
 }

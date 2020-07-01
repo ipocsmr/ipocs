@@ -1,18 +1,19 @@
 #ifndef LEDCONTROL_H
 #define LEDCONTROL_H
 
+#include <stdint.h>
+
 enum LedState {
   OFF,
   ON,
-  BLINK_MS100,
-  BLINK_MS500
+  BLINK
 };
 
 namespace esp {
     class LedControl {
         public:
             static LedControl& instance();
-            void setState(enum LedState newState);
+            void setState(enum LedState newState, uint16_t interval = 100);
 
             void begin();
             void loop();

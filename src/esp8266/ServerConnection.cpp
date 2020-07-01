@@ -6,6 +6,7 @@
 #include "../IPC/Message.h"
 #include "http.h"
 #include "ArduinoConnection.h"
+#include "LedControl.hpp"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
@@ -48,6 +49,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             esp::Http::instance().log("Connecting to: " + String(ip[3]) + "." + String(ip[2]) + "." + String(ip[1]) + "." + String(ip[0]) + ":" + String(port));
             byte returnVal = this->tcp->connect(ip, port);
             if (returnVal == 1) {
+                esp::LedControl::instance().setState(ON);
                 this->tcp->keepAlive(5, 1, 4);
                 char unitId[10];
                 sprintf(unitId, "%d", Configuration::getUnitID());
