@@ -10,7 +10,7 @@
 #include <list>
 
 #define MIN_LOOP_TIME 100
-#define PING_TIME 1000
+#define PING_TIME 500
 #define WIFI_CONNECT 30000
 
 std::list<WiFiEventHandler> wifiHandlers;
