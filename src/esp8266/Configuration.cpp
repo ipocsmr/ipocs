@@ -95,6 +95,6 @@ bool Configuration::verifyCrc()
 }
 
 __attribute__((constructor))
-static void initialize_packet_applicationdata() {
+static void initialize_configuration() {
   EEPROM.begin(1024);
 }
