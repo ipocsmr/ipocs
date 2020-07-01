@@ -34,18 +34,6 @@ void ard::EspConnection::begin() {
     Serial.begin(115200);
     this->packetSerial->setStream(&Serial);
     this->packetSerial->setPacketHandler(&onPacketReceived);
-    IPC::Message* ipcSiteData = IPC::Message::create();
-    ipcSiteData->RT_TYPE = IPC::STARTED;
-    uint8_t siteData[strlen(VERSION_STRING) + 1];
-    memcpy(siteData, VERSION_STRING, strlen(VERSION_STRING) + 1);
-#ifdef HAVE_HWSERIAL1
-    Serial1.println("Version: " + String(VERSION_STRING));
-#endif
-    ipcSiteData->setPayload(siteData, strlen(VERSION_STRING) + 1);
-    uint8_t buffer[ipcSiteData->RL_MESSAGE];
-    size_t msgSize = ipcSiteData->serialize(buffer);
-    this->packetSerial->send(buffer, msgSize);
-    delete ipcSiteData;
 }
 
 void ard::EspConnection::loop() {
@@ -112,11 +100,25 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       Serial1.print('p');
       Serial1.flush();
 #endif
-      IPC::Message* ipcPong = IPC::Message::create();
-      ipcPong->RT_TYPE = IPC::IPONG;
-      ipcPong->setPayload();
-      ard::EspConnection::instance().send(ipcPong, false);
-      delete ipcPong;
+      if (!ard::EspConnection::instance().bHasSentStarted) {
+        ard::EspConnection::instance().bHasSentStarted = true;
+        IPC::Message* ipcSiteData = IPC::Message::create();
+        ipcSiteData->RT_TYPE = IPC::STARTED;
+        uint8_t siteData[strlen(VERSION_STRING) + 1];
+        memcpy(siteData, VERSION_STRING, strlen(VERSION_STRING) + 1);
+#ifdef HAVE_HWSERIAL1
+        Serial1.println("Version: " + String(VERSION_STRING));
+#endif
+        ipcSiteData->setPayload(siteData, strlen(VERSION_STRING) + 1);
+        ard::EspConnection::instance().send(ipcSiteData, false);
+        delete ipcSiteData;
+      } else {
+        IPC::Message* ipcPong = IPC::Message::create();
+        ipcPong->RT_TYPE = IPC::IPONG;
+        ipcPong->setPayload();
+        ard::EspConnection::instance().send(ipcPong, false);
+        delete ipcPong;
+      }
       break; }
     case IPC::IPONG: {
       break; }

@@ -27,6 +27,7 @@ namespace ard {
       void send(IPC::Message* msg, bool print = true);
 
       unsigned long m_ulLastMsg = 0;
+      bool bHasSentStarted = false;
     private:
       EspConnection() {}
       SLIPPacketSerial* packetSerial = nullptr;
