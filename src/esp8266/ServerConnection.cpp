@@ -11,6 +11,25 @@
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
 
+MDNSResponder::hMDNSServiceQuery hMDNSServiceQuery;
+
+void MDNSServiceQueryCallback(MDNSResponder::MDNSServiceInfo serviceInfo, MDNSResponder::AnswerType answerType, bool p_bSetContent) {
+    switch (answerType) {
+        case MDNSResponder::AnswerType::IP4Address: {
+            IPAddress localIP = WiFi.localIP();
+            for (IPAddress ip : serviceInfo.IP4Adresses()) {
+                if (localIP[0] == ip[0] && localIP[1] == ip[1] && localIP[2] == ip[2]) {
+                    esp::ServerConnection::instance().setServer(ip, serviceInfo.hostPort());
+                    break;
+                }
+            };
+        }
+        break;
+        default:
+        break;
+    }
+}
+
 esp::ServerConnection::ServerConnection() {
     this->tcp = new WiFiClient();
 }
@@ -33,6 +52,11 @@ void esp::ServerConnection::disconnect() {
     this->tcp->stop();
 }
 
+void esp::ServerConnection::setServer(IPAddress &ip, uint16_t port) {
+    this->serverIP = ip;
+    this->serverPort = port;
+}
+
 void esp::ServerConnection::loop(bool isWiFiConnected) {
     if (!isWiFiConnected) {
         if (this->tcp->connected()) {
@@ -40,14 +64,13 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
         }
         return;
     }
+    if (!hMDNSServiceQuery) {
+        hMDNSServiceQuery = MDNS.installServiceQuery("ipocs", "tcp", MDNSServiceQueryCallback);
+    }
     if (!this->tcp->connected()) {
-        int responses = MDNS.queryService("ipocs", "tcp");
-        esp::Http::instance().log("Number of mdns services: " + String(responses));
-        if (responses != 0 && MDNS.IP(0) != IPAddress()) {
-            IPAddress ip = MDNS.IP(0);
-            uint16_t port = MDNS.port(0);
-            esp::Http::instance().log("Connecting to: " + String(ip[3]) + "." + String(ip[2]) + "." + String(ip[1]) + "." + String(ip[0]) + ":" + String(port));
-            byte returnVal = this->tcp->connect(ip, port);
+        if (this->serverPort != 0 && this->serverIP != IPAddress()) {
+            esp::Http::instance().log("Connecting to: " + this->serverIP.toString() + ":" + String(this->serverPort));
+            byte returnVal = this->tcp->connect(this->serverIP, this->serverPort);
             if (returnVal == 1) {
                 esp::LedControl::instance().setState(ON);
                 this->tcp->keepAlive(5, 1, 4);
@@ -115,13 +138,12 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
     }
 }
 
-void esp::ServerConnection::send(IPOCS::Message* msg)
-{
-  if (!this->tcp->connected()) {
-    esp::Http::instance().log("Not connected, throwing message");
-    return;
-  }
-  uint8_t buffer[255];
-  uint8_t len = msg->serialize(buffer);
-  this->tcp->write(buffer, len);
+void esp::ServerConnection::send(IPOCS::Message* msg) {
+    if (!this->tcp->connected()) {
+        esp::Http::instance().log("Not connected, throwing message");
+        return;
+    }
+    uint8_t buffer[255];
+    uint8_t len = msg->serialize(buffer);
+    this->tcp->write(buffer, len);
 }

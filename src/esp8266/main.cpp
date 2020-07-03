@@ -39,6 +39,9 @@ int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
 }
 
 int onStationModeGotIP(const WiFiEventStationModeGotIP& change) {
+  char name[20];
+  sprintf(name, "ipocs_%d", Configuration::getUnitID());
+  MDNS.begin(name, WiFi.localIP());
   return 0;
 }
 
@@ -64,9 +67,11 @@ void setup(void)
   WiFi.setOutputPower(20.5);
   WiFi.hostname(wifi_name);
   MDNS.begin(name);
+  MDNS.addService(name, "http", 80);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
   wifiHandlers.push_back(WiFi.onStationModeDisconnected(onStationModeDisconnected));
+  wifiHandlers.push_back(WiFi.onStationModeGotIP(onStationModeGotIP));
   lastPing = millis();
 }
 
@@ -129,7 +134,7 @@ void loop(void)
   esp::Http::instance().loop();
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);
   esp::ArduinoConnection::instance().loop();
-
+  MDNS.update();
   unsigned long loopEnd = millis();
   if ((loopEnd - lastPing) >= PING_TIME) {
     lastPing = loopEnd;
