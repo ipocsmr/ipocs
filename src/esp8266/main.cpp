@@ -40,7 +40,7 @@ int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
 
 int onStationModeGotIP(const WiFiEventStationModeGotIP& change) {
   char name[20];
-  sprintf(name, "ipocs_%d", Configuration::getUnitID());
+  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
   MDNS.begin(name, WiFi.localIP());
   return 0;
 }
@@ -59,13 +59,11 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 
 void setup(void)
 {
-  char name[20];
   esp::LedControl::instance().begin();
-  sprintf(name, "ipocs_%d", Configuration::getUnitID());
-  char wifi_name[20];
-  sprintf(wifi_name, "ipocs_%03d_%06X", Configuration::getUnitID(), ESP.getChipId());
+  char name[20];
+  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
   WiFi.setOutputPower(20.5);
-  WiFi.hostname(wifi_name);
+  WiFi.hostname(name);
   MDNS.begin(name);
   MDNS.addService("http", "tcp", 80);
   esp::Http::instance().setup();
@@ -76,15 +74,15 @@ void setup(void)
 }
 
 void setupWiFi(void) {
-  char wifi_name[20];
-  sprintf(wifi_name, "ipocs_%03d_%06X", Configuration::getUnitID(), ESP.getChipId());
+  char name[20];
+  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
   char password[61];
   Configuration::getPassword(password);
   char cSSID[33];
   Configuration::getSSID(cSSID);
   esp::Http::instance().log("Connecting to SSID: " + String(cSSID));
   WiFi.disconnect();
-  WiFi.hostname(wifi_name);
+  WiFi.hostname(name);
   WiFi.mode(WIFI_STA);
   WiFi.begin((const char*)String(cSSID).c_str(), (const char*)String(password).c_str());
 }
@@ -110,7 +108,7 @@ void loop(void)
         // WiFi failed to reconnect - go into soft AP mode
         WiFi.mode(WIFI_AP);
         char name[20];
-        sprintf(name, "IPOCS_%04X", Configuration::getUnitID());
+        sprintf(name, "IPOCS_%03d", Configuration::getUnitID());
         WiFi.softAP(name);
         connectionInitiated = 0;
         wifiMode = AP;
