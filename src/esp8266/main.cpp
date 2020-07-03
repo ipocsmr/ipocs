@@ -67,7 +67,7 @@ void setup(void)
   WiFi.setOutputPower(20.5);
   WiFi.hostname(wifi_name);
   MDNS.begin(name);
-  MDNS.addService(name, "http", 80);
+  MDNS.addService("http", "tcp", 80);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
   wifiHandlers.push_back(WiFi.onStationModeDisconnected(onStationModeDisconnected));
