@@ -18,6 +18,7 @@ namespace esp {
         void loop();
 
         void index();
+        void aIndex();
         void handleUnitIdUpdate();
         void handleSsidUpdate();
         void handlePwdUpdate();
@@ -25,6 +26,9 @@ namespace esp {
         void handleSiteDataUpdate();
         void handleRestart(bool restartArduino);
         void handleNotFound();
+        void handleFileDelete();
+        void handleFileUpload();
+        void handleArduinoFlash();
         void log(const String& string);
         void setArduinoVersion(uint8_t* versionBuffer);
       private:
