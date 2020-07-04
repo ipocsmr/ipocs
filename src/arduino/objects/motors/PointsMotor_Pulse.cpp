@@ -57,6 +57,7 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   }
   this->invertStatus = (configData[3] == 1);
   this->lowToThrow = (configData[4] == 1);
+  this->timeToKeepActive = configData[5] * 10;
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrderMillis = 0;
   pinMode(this->throwLeftOutput, OUTPUT);
@@ -90,8 +91,7 @@ void PointsMotor_Pulse::loop()
 {
   if (this->lastOrderMillis == 0)
     return;
-  unsigned int timeToKeepActive =  500U;
-  if (millis() - this->lastOrderMillis > timeToKeepActive)
+  if (millis() - this->lastOrderMillis > this->timeToKeepActive)
   {
     digitalWrite(this->throwLeftOutput, this->lowToThrow ? HIGH : LOW);
     digitalWrite(this->throwRightOutput, this->lowToThrow ? HIGH : LOW);
@@ -103,8 +103,7 @@ IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE PointsMotor_Pulse::getState()
 {
   IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE pos = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
   if (this->posInput == NO_POSITION_INPUT) {
-    unsigned int timeToKeepActive =  500U;
-    if (millis() - this->lastOrderMillis > timeToKeepActive)
+    if (millis() - this->lastOrderMillis > this->timeToKeepActive)
     {
       switch (this->lastOrderState)
       {
