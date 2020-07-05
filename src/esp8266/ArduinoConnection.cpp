@@ -78,6 +78,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
     case IPC::RESTART: {
       break; }
     case IPC::IPONG: {
+      esp::Http::instance().setArduinoVersion(ipcMsg->pld);
       break; }
     case IPC::IPING: {
       break; }

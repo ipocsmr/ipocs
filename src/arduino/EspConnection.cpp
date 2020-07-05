@@ -100,12 +100,12 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       Serial1.print('p');
       Serial1.flush();
 #endif
+      uint8_t siteData[strlen(VERSION_STRING) + 1];
+      memcpy(siteData, VERSION_STRING, strlen(VERSION_STRING) + 1);
       if (!ard::EspConnection::instance().bHasSentStarted) {
         ard::EspConnection::instance().bHasSentStarted = true;
         IPC::Message* ipcSiteData = IPC::Message::create();
         ipcSiteData->RT_TYPE = IPC::STARTED;
-        uint8_t siteData[strlen(VERSION_STRING) + 1];
-        memcpy(siteData, VERSION_STRING, strlen(VERSION_STRING) + 1);
 #ifdef HAVE_HWSERIAL1
         Serial1.println("Version: " + String(VERSION_STRING));
 #endif
@@ -115,7 +115,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       } else {
         IPC::Message* ipcPong = IPC::Message::create();
         ipcPong->RT_TYPE = IPC::IPONG;
-        ipcPong->setPayload();
+        ipcPong->setPayload(siteData, strlen(VERSION_STRING) + 1);
         ard::EspConnection::instance().send(ipcPong, false);
         delete ipcPong;
       }
