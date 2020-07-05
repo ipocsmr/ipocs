@@ -34,7 +34,9 @@ int onStationModeConnected(const WiFiEventStationModeConnected& change) {
 
 int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
   esp::ServerConnection::instance().disconnect();
-  wifiMode = None;
+  if (connectionInitiated == 0) {
+    wifiMode = None;
+  }
   return 0;
 }
 
