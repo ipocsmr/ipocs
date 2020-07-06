@@ -13,6 +13,7 @@ namespace IPC {
     IPOCS = 0x10,
     IPING = 0x20,
     IPONG = 0x21,
+    LOG = 0x2A,
     CESTAB = 0x30
   };
 

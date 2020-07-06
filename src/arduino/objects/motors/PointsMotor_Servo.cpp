@@ -4,6 +4,7 @@
 #include "PointsMotor_Servo.h"
 #include "../../../IPOCS/Packets/ThrowPointsPacket.h"
 #include "../../log.h"
+#include "../../EspConnection.h"
 
 #define NO_POSITION_INPUT 0
 const int servoRightVal = 20;
@@ -62,6 +63,12 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
     default: this->posInput = NO_POSITION_INPUT; break;
   }
   this->invertStatus = (configData[2] == 1);
+
+  ard::EspConnection::instance().log("-> Servo Motor, " 
+    "output=" + String(configData[0 + 1]) + ", " 
+    "posInput=" + String(this->posInput) + ", " 
+    "invertStatus=" + String(this->invertStatus)
+  );
   return 3;
 }
 

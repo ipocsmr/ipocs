@@ -82,6 +82,9 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
       break; }
     case IPC::IPING: {
       break; }
+    case IPC::LOG: {
+      esp::Http::instance().log(String((char* const)ipcMsg->pld));
+      break; }
     case IPC::CESTAB: {
       break; }
   }

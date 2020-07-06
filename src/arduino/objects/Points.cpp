@@ -6,7 +6,6 @@
 #include "../EspConnection.h"
 #include "../../IPC/Message.h"
 #include "../../IPOCS/Message.h"
-#include "../log.h"
 
 Points::Points() {
   this->lastSentState = IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE::OUT_OF_CONTROL;
@@ -68,6 +67,7 @@ void Points::objectInit(const uint8_t configData[], int configDataLen)
   const uint8_t* configDataCurrent = &configData[1];
   for (int index = 1; index < configDataLen; )
   {
+    ard::EspConnection::instance().log("> Point (" + String(objectName) + ")");
     initPointsMotorFunction fun = NULL;
     PointsMotorStore::getInstance().getFunction(configDataCurrent[0], &fun);
     PointsMotor* pointsMotor = fun();

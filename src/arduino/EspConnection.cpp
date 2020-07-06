@@ -133,6 +133,14 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
   delete ipcMsg;
 }
 
+void ard::EspConnection::log(String& str) {
+  IPC::Message* ipcMsg = IPC::Message::create();
+  ipcMsg->RT_TYPE = IPC::LOG;
+  ipcMsg->setPayload((uint8_t* const)str.c_str(), strlen(str.c_str()) + 1);
+  ard::EspConnection::instance().send(ipcMsg, false);
+  delete ipcMsg;
+}
+
 void ard::EspConnection::send(IPC::Message* msg, bool print) {
     uint8_t buffer[msg->RL_MESSAGE + 10];
     size_t msgSize = msg->serialize(buffer);

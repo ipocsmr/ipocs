@@ -23,6 +23,8 @@ namespace ard {
 
       void begin();
       void loop();
+
+      void log(String& msg);
       
       void send(IPC::Message* msg, bool print = true);
 

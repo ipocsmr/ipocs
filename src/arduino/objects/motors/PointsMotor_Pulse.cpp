@@ -3,6 +3,7 @@
 #include "PointsMotorStore.h"
 #include "PointsMotor_Pulse.h"
 #include "../../log.h"
+#include "../../EspConnection.h"
 
 const uint8_t NO_POSITION_INPUT = 0;
 const unsigned long MOVEMENT_TIMEOUT = 100000;
@@ -64,6 +65,15 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   pinMode(this->throwRightOutput, OUTPUT);
   digitalWrite(this->throwLeftOutput, this->lowToThrow ? HIGH : LOW);
   digitalWrite(this->throwRightOutput, this->lowToThrow ? HIGH : LOW);
+
+  ard::EspConnection::instance().log("-> Pulse Motor, "
+    "leftOutput=" + String(this->throwLeftOutput) + ", "
+    "rightOutput=" + String(this->throwRightOutput) + ", "
+    "posInput=" + String(this->posInput) + ", "
+    "invertStatus=" + String(this->invertStatus) + ", "
+    "lowToThrow=" + String(this->lowToThrow) + ", "
+    "timeToKeepActive=" + String(this->timeToKeepActive)
+  );
   return 6;
 }
 

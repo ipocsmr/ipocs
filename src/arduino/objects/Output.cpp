@@ -5,7 +5,6 @@
 #include "../../IPC/Message.h"
 #include "../../IPOCS/Message.h"
 #include "../../IPOCS/Packets/SetOutputPacket.h"
-#include "../log.h"
 
 Output::Output(): lastOrderTime(0), offDelay(0), outputPin(0),
                   lastSentState(IPOCS::OutputStatusPacket::E_RQ_OUTPUT_STATE::OFF) {
@@ -17,6 +16,10 @@ void Output::handleOrder(IPOCS::Packet* basePacket)
     IPOCS::SetOutputPacket* packet = (IPOCS::SetOutputPacket*)basePacket;
     // Set output high
     this->lastOrderTime = millis();
+    ard::EspConnection::instance().log("+ Set Output, "
+      "state=" + String(packet->RQ_OUTPUT_COMMAND == IPOCS::SetOutputPacket::E_RQ_OUTPUT_COMMAND::ON ? "ON" : "OFF") + ", "
+      "duration=" + String(packet->RT_DURATION)
+    );
     if (packet->RQ_OUTPUT_COMMAND == IPOCS::SetOutputPacket::E_RQ_OUTPUT_COMMAND::ON) {
       this->offDelay = packet->RT_DURATION;
       digitalWrite(this->outputPin, HIGH);
@@ -47,6 +50,10 @@ IPOCS::Packet* Output::getStatusPacket() {
 
 void Output::loop() {
   if ((offDelay != 0) && (millis() - this->lastOrderTime) >= this->offDelay * 100) {
+    ard::EspConnection::instance().log("- Set Output, "
+      "duration expired, "
+      "delay=" + String(millis() - this->lastOrderTime)
+    );
     this->offDelay = 0;
     digitalWrite(this->outputPin, LOW);
     if (this->lastSentState == IPOCS::OutputStatusPacket::E_RQ_OUTPUT_STATE::ON) {
@@ -62,6 +69,10 @@ void Output::objectInit(const uint8_t configData[], int configDataLen)
 
   pinMode(this->outputPin, OUTPUT);
   digitalWrite(this->outputPin, LOW);
+
+  ard::EspConnection::instance().log("> Output, "
+    "outputPin=" + String(this->outputPin)
+  );
 }
 
 static BasicObject* createOutput()

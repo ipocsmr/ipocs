@@ -2,6 +2,7 @@
 #include "../ObjectStore.h"
 #include "../../IPOCS/Packets/InputStatusPacket.h"
 #include <Arduino.h>
+#include "../EspConnection.h"
 
 Input::Input(): inputPin(0), debounceTime(0), releaseHoldTime(0), changeFirstRegisteredTime(0),
                   lastSentState(IPOCS::InputStatusPacket::E_RQ_INPUT_STATE::OFF) {
@@ -61,6 +62,11 @@ void Input::objectInit(const uint8_t configData[], int configDataLen)
   this->debounceTime = configData[1];
   this->releaseHoldTime = configData[2];
 
+  ard::EspConnection::instance().log("> Input, "
+    "inputPin=" + String(this->inputPin) + ", "
+    "debounceTime=" + String(this->debounceTime) + ", "
+    "releaseHoldTime=" + String(this->releaseHoldTime)
+  );
   pinMode(this->inputPin, INPUT_PULLUP);
 }
 
