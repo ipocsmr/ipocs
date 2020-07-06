@@ -64,7 +64,7 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   pinMode(this->throwRightOutput, OUTPUT);
   digitalWrite(this->throwLeftOutput, this->lowToThrow ? HIGH : LOW);
   digitalWrite(this->throwRightOutput, this->lowToThrow ? HIGH : LOW);
-  return 4;
+  return 6;
 }
 
 void PointsMotor_Pulse::handleOrder(IPOCS::Packet* basePacket)
