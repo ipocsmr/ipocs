@@ -28,7 +28,7 @@ class PointsMotor_Pulse: public PointsMotor {
     uint8_t throwRightOutput;
     uint8_t posInput;
 
-    unsigned long lastOrderMillis;
+    uint32_t lastOrderMillis;
     IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND lastOrderState;
 };
 

@@ -23,7 +23,7 @@ class Output: public BasicObject {
     virtual void objectInit(const uint8_t configData[], int configDataLen);
     virtual IPOCS::Packet* getStatusPacket();
   private:
-    uint16_t lastOrderTime;
+    uint32_t lastOrderTime;
     uint16_t offDelay;
     uint8_t outputPin;
     IPOCS::OutputStatusPacket::E_RQ_OUTPUT_STATE lastSentState;
