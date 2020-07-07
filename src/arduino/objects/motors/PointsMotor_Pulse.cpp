@@ -58,7 +58,7 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   }
   this->invertStatus = (configData[3] == 1);
   this->lowToThrow = (configData[4] == 1);
-  this->timeToKeepActive = configData[5] * 10;
+  this->timeToKeepActive = configData[5] * 100;
   this->lastOrderState = (IPOCS::ThrowPointsPacket::E_RQ_POINTS_COMMAND)0;
   this->lastOrderMillis = 0;
   pinMode(this->throwLeftOutput, OUTPUT);

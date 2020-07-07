@@ -23,7 +23,7 @@ class PointsMotor_Pulse: public PointsMotor {
   private:
     bool invertStatus;
     bool lowToThrow;
-    uint8_t timeToKeepActive;
+    uint16_t timeToKeepActive;
     uint8_t throwLeftOutput;
     uint8_t throwRightOutput;
     uint8_t posInput;
