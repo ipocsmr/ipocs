@@ -101,12 +101,18 @@ void esp::Http::index() {
   html += ":81');";
   html += "  connection.onmessage = function (e) {\n";
   html += "    console.log('Server: ', e.data);\n";
-  html += "  };";
-  html += "  connection.onclose = function() {";
-  html += "    start();";
-  html += "  };";
-  html += "}";
-  html += "start();";
+  html += "    var element = document.getElementById('log');\n";
+  html += "    var divE = document.createElement('div');\n";
+  html += "    var textNode = document.createTextNode(e.data);\n";
+  html += "    divE.appendChild(textNode);\n";
+  html += "    element.appendChild(divE);\n";
+  html += "    element.scrollTop = element.scrollHeight;\n";
+  html += "  };\n";
+  html += "  connection.onclose = function() {\n";
+  html += "    start();\n";
+  html += "  };\n";
+  html += "}\n";
+  html += "start();\n";
   html += "</script>\n";
   html += "<body><h1>IPOCS Configuration Tool</h1><br />\n";
   html += "Arduino Software Version: ";
@@ -144,6 +150,7 @@ void esp::Http::index() {
   html += "<tr><th>&nbsp;</th><td><input id='hidden' type='hidden' value=''><button onClick='postIt(\"hidden\", \"/api/resetESP\");'>Reset WiFi</button> (WARNING: This erases WiFi configuration)</td></tr>\n";
   html += "</table>\n";
   html += "<a href='/update'>Update</a>";
+  html += "<p><div id='log' style='width: 600px; height: 200px; overflow-y: scroll;'></div></p>\n";
   html += "</body></html>\n";
   this->server->send(200, "text/html", html);
 }
