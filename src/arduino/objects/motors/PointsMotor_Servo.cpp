@@ -65,9 +65,9 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
   this->invertStatus = (configData[2] == 1);
 
   ard::EspConnection::instance().log("-> Servo Motor, " 
-    "output=" + String(configData[0 + 1]) + ", " 
-    "posInput=" + String(this->posInput) + ", " 
-    "invertStatus=" + String(this->invertStatus)
+    "o=" + String(configData[0 + 1]) + ", " 
+    "pi=" + String(this->posInput) + ", " 
+    "is=" + String(this->invertStatus)
   );
   return 3;
 }

@@ -70,8 +70,8 @@ void Output::objectInit(const uint8_t configData[], int configDataLen)
   pinMode(this->outputPin, OUTPUT);
   digitalWrite(this->outputPin, LOW);
 
-  ard::EspConnection::instance().log("> Output, "
-    "outputPin=" + String(this->outputPin)
+  ard::EspConnection::instance().log("> Output (" + String(objectName) + "), "
+    "op=" + String(this->outputPin)
   );
 }
 

@@ -17,7 +17,6 @@ namespace esp {
 
             void begin();
             void loop();
-            unsigned long m_ulLastMsg = 0;
         private:
             ArduinoConnection() {}
             SLIPPacketSerial* packetSerial;

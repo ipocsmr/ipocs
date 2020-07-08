@@ -62,10 +62,10 @@ void Input::objectInit(const uint8_t configData[], int configDataLen)
   this->debounceTime = configData[1];
   this->releaseHoldTime = configData[2];
 
-  ard::EspConnection::instance().log("> Input, "
-    "inputPin=" + String(this->inputPin) + ", "
-    "debounceTime=" + String(this->debounceTime) + ", "
-    "releaseHoldTime=" + String(this->releaseHoldTime)
+  ard::EspConnection::instance().log("> Input (" + String(objectName) + "), "
+    "ip=" + String(this->inputPin) + ", "
+    "dt=" + String(this->debounceTime) + ", "
+    "rht=" + String(this->releaseHoldTime)
   );
   pinMode(this->inputPin, INPUT_PULLUP);
 }

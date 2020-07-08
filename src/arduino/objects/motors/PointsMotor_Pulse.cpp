@@ -67,12 +67,12 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   digitalWrite(this->throwRightOutput, this->lowToThrow ? HIGH : LOW);
 
   ard::EspConnection::instance().log("-> Pulse Motor, "
-    "leftOutput=" + String(this->throwLeftOutput) + ", "
-    "rightOutput=" + String(this->throwRightOutput) + ", "
-    "posInput=" + String(this->posInput) + ", "
-    "invertStatus=" + String(this->invertStatus) + ", "
-    "lowToThrow=" + String(this->lowToThrow) + ", "
-    "timeToKeepActive=" + String(this->timeToKeepActive)
+    "lo=" + String(this->throwLeftOutput) + ", "
+    "ro=" + String(this->throwRightOutput) + ", "
+    "pi=" + String(this->posInput) + ", "
+    "is=" + String(this->invertStatus) + ", "
+    "ltt=" + String(this->lowToThrow) + ", "
+    "ttka=" + String(this->timeToKeepActive)
   );
   return 6;
 }
