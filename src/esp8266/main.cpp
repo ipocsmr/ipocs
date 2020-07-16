@@ -5,6 +5,7 @@
 #include "../IPOCS/Message.h"
 #include "ArduinoConnection.h"
 #include "LedControl.hpp"
+#include "ArduinoFlash.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiClient.h>
@@ -130,6 +131,7 @@ void loop(void)
     }
   }
 
+  esp::ArduinoFlash::instance().loop();
   esp::LedControl::instance().loop();
   esp::Http::instance().loop();
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);

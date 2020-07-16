@@ -13,17 +13,26 @@ esp::ArduinoConnection& esp::ArduinoConnection::instance() {
 }
 
 void esp::ArduinoConnection::begin() {
-    if (this->packetSerial != nullptr) {
-      delete this->packetSerial;
-    } 
-    Serial.begin(115200);
-    while (Serial.available())
+    this->stop();
+    if (this->packetSerial == nullptr)
     {
-      Serial.read();
+      esp::Http::instance().log("initializing arduino connection");
+      Serial.begin(115200);
+      while (Serial.available())
+      {
+        Serial.read();
+      }
+      this->packetSerial = new SLIPPacketSerial();
+      this->packetSerial->setStream(&Serial);
+      this->packetSerial->setPacketHandler(&onPacketReceived);
     }
-    this->packetSerial = new SLIPPacketSerial();
-    this->packetSerial->setStream(&Serial);
-    this->packetSerial->setPacketHandler(&onPacketReceived);
+}
+
+void esp::ArduinoConnection::stop() {
+  if (this->packetSerial != nullptr) {
+    delete this->packetSerial;
+    this->packetSerial = nullptr;
+  }
 }
 
 void esp::ArduinoConnection::loop() {

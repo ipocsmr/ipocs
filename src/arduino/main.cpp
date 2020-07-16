@@ -16,6 +16,7 @@
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 #include "log.h"
+#include "LedControl.hpp"
 #include <avr/wdt.h>
 
 #ifdef HAVE_HWSERIAL1
@@ -33,9 +34,12 @@ void setup(void) {
   lastPrint = millis();
   #endif
   ard::EspConnection::instance().begin();
+  ard::LedControl::instance().begin();
+  ard::LedControl::instance().setState(LedState::BLINK, 500);
 }
 
 void loop() {
+  ard::LedControl::instance().loop();
   ard::EspConnection::instance().loop();
   ObjectStore::getInstance().loop();
 #ifdef HAVE_HWSERIAL1
