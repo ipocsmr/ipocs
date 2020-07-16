@@ -4,6 +4,7 @@
 #include "../IPC/Message.h"
 #include <WString.h>
 #include <uCRC16Lib.h>
+#include "ArduinoFlash.h"
 
 using namespace std::placeholders;
 
@@ -29,6 +30,7 @@ esp::Http::Http() {
     this->arduinoVersion = new char[1] { 0 };
     this->server = new ESP8266WebServer();
     this->server->on("/", [this]() { this->index(); });
+    this->server->on("/reason", [this]() { this->handleReason(); });
     this->server->on("/aupdate", [this]() {this->aIndex(); });
     this->server->on("/api/updateUnitId", HTTP_POST, [this]() { this->handleUnitIdUpdate(); });
     this->server->on("/api/updateSsid", HTTP_POST, [this]() { this->handleSsidUpdate(); });
@@ -37,8 +39,10 @@ esp::Http::Http() {
     this->server->on("/api/applyWiFi", HTTP_POST, [this]() { this->handleApplyWiFi(); });
     this->server->on("/api/restartESP", HTTP_POST, [this]() { this->handleRestart(false); });
     this->server->on("/api/fileDelete", HTTP_POST, [this]() { this->handleFileDelete(); });
-    this->server->on("/api/fileUpload", HTTP_POST, [this]() { this->handleFileUpload(); });
-    this->server->on("/api/arduinoFlash", HTTP_POST, [this]() { this->handleArduinoFlash(); });
+    this->server->on("/api/fileUpload", HTTP_POST, [this]() { this->server->send(200); },  [this]() { this->handleFileUpload(); });
+    this->server->on("/api/arduinoFlash", HTTP_POST, [this]() { this->handleArduinoFlash(false); });
+    this->server->on("/api/arduinoVerify", HTTP_POST, [this]() { this->handleArduinoFlash(true); });
+    this->server->on("/api/arduinoVerifyFile", HTTP_POST, [this]() { this->handleVerifyFile(); });
     this->server->on("/api/resetESP", HTTP_POST, [this]() {
       wifi_station_disconnect();
       ESP.eraseConfig();
@@ -83,6 +87,13 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
 #define VERSION_STRING TOSTRING(VERSION_RAW)
+
+void esp::Http::handleReason() {
+  rst_info *myResetInfo;
+  myResetInfo = ESP.getResetInfoPtr();
+  String html = "<html><body>" + String(myResetInfo->reason) + ", " + String(myResetInfo->exccause) + "</body></body>";
+  this->server->send(200, "text/html", html);
+}
 
 void esp::Http::index() {
   auto ip = WiFi.localIP();
@@ -200,14 +211,20 @@ void esp::Http::aIndex() {
   html += "<body><h1>IPOCS Configuration Tool - Arduino flashing</h1><br />\n";
   html += "Upload file: <input type=\"file\" id=\"file-input\" /><button onClick='doUpload();'>Upload</button>\n";
   html += "<table>\n";
-  html += "<tr><th>Name</th><th>Size</th><th>Commands</th></tr>\n";
+  html += "<tr><th>Name</th><th>Size</th><th>File operations</th><th>Flash Commands</th></tr>\n";
   SPIFFS.begin();
   SPIFFS.mkdir("/hex");
   Dir dir = SPIFFS.openDir("/hex");
   uint8_t fileNum = 0;
   while (dir.next()) {
     File f = dir.openFile("r");
-    html += "<tr><td id='file" + String(fileNum) + "'>" + dir.fileName() + "</td><td>" + String(f.size()) + "</td><td><a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoFlash\"); return false' href='#'>Flash</a>&nbsp;<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/fileDelete\"); return true' href='#'>Delete</a></td></tr>";
+    html += "<tr><td id='file" + String(fileNum) + "'>" + dir.fileName() + "</td><td>" + String(f.size()) + "</td><td>";
+    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerifyFile\"); return false' href='#'>Verify File</a>&nbsp;";
+    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/fileDelete\"); return true' href='#'>Delete</a>";
+    html += "</td><td>";
+    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerify\"); return true' href='#'>Verify Flash</a>&nbsp;";
+    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoFlash\"); return false' href='#'>Flash</a>";
+    html += "</td></tr>";
     fileNum++;
   }
   html += "</table>";
@@ -217,50 +234,46 @@ void esp::Http::aIndex() {
   this->server->send(200, "text/html", html);
 }
 
+static File fsUploadFile;
+
 void esp::Http::handleFileUpload() {
   HTTPUpload& upload = this->server->upload();
-  
-  this->log("Uploading file: " + upload.filename);
-  switch (upload.status) {
-    case UPLOAD_FILE_START: this->log("UPLOAD_FILE_START"); break;
-    case UPLOAD_FILE_WRITE: this->log("UPLOAD_FILE_WRITE"); break;
-    case UPLOAD_FILE_END: this->log("UPLOAD_FILE_END"); break;
-    case UPLOAD_FILE_ABORTED: this->log("UPLOAD_FILE_ABORTED"); break;
-  }
-  if (upload.status != UPLOAD_FILE_END) {
-    this->server->send(500, "text/plain", "500: unexpected upload state");
-  } else {
-    SPIFFS.begin();
-    File file = SPIFFS.open("/hex/" + String(upload.filename), "w+");
-    if (file) {
-      for (int i = 0; i < upload.contentLength; i++) {
-        file.write(upload.buf[i]);
-      }
-      file.close();
-    }
-    SPIFFS.end();
-  }
   if(upload.status == UPLOAD_FILE_START){
-    String filename = upload.filename;
-    if(!filename.startsWith("/")) filename = "/"+filename;
-    this->log("Uploading file: " + filename);
-    //Serial.print("handleFileUpload Name: "); Serial.println(filename);
-    //fsUploadFile = SPIFFS.open(filename, "w");            // Open the file for writing in SPIFFS (create if it doesn't exist)
+    SPIFFS.begin();
+    String filename = String(upload.filename);
+    if(!filename.startsWith("/")) filename = "/" + filename;
+    SPIFFS.mkdir("/hex");
+    filename = "/hex" + filename;
+    this->log("Starting file upload " + filename);
+    fsUploadFile = SPIFFS.open(filename, "w+");            // Open the file for writing in SPIFFS (create if it doesn't exist)
+    if (!!!fsUploadFile)
+    {
+      this->log("Failed to create file");
+    }
     filename = String();
   } else if(upload.status == UPLOAD_FILE_WRITE){
-    //if(fsUploadFile)
-    //  fsUploadFile.write(upload.buf, upload.currentSize); // Write the received bytes to the file
+    if(!!fsUploadFile) {
+      //String recieved = "";
+      //for (size_t i = 0; i < upload.currentSize; i++)
+      //{
+      //  recieved += String((char)upload.buf[i]);
+      //}
+      //this->log(recieved);
+      fsUploadFile.write(upload.buf, upload.currentSize); // Write the received bytes to the file
+      //this->log("Writing chunk...");
+    } else {
+      this->log("Failed writing chunk...");
+    }
   } else if(upload.status == UPLOAD_FILE_END){
-    //if(fsUploadFile) {                                    // If the file was successfully created
-    //  fsUploadFile.close();                               // Close the file again
-    //  Serial.print("handleFileUpload Size: "); Serial.println(upload.totalSize);
-    //  server.sendHeader("Location","/success.html");      // Redirect the client to the success page
-    //  server.send(303);
-    //} else {
-    //  server.send(500, "text/plain", "500: couldn't create file");
-    //}
+    if(!!fsUploadFile) {                                    // If the file was successfully created
+      fsUploadFile.write(upload.buf, upload.currentSize);
+      fsUploadFile.close();                               // Close the file again
+      this->server->send(200);
+      SPIFFS.end();
+    } else {
+      this->server->send(500, "text/plain", "500: couldn't create file");
+    }
   }
-  this->server->send(200);
 }
 
 void esp::Http::handleFileDelete() {
@@ -271,9 +284,10 @@ void esp::Http::handleFileDelete() {
   this->server->send(200);
 }
 
-void esp::Http::handleArduinoFlash() {
+void esp::Http::handleArduinoFlash(bool verifyOnly) {
   String fileName = this->server->arg("data");
-  this->log("Flash arduino with file: " + fileName);
+  this->log(String(verifyOnly ? "Verify" : "Flash") + " arduino with file: " + fileName);
+  esp::ArduinoFlash::instance().initiate(fileName, verifyOnly);
   this->server->send(200);
 }
 
@@ -319,6 +333,12 @@ void esp::Http::handleRestart(bool restartArduino) {
     ArduinoConnection::instance().send(message);
     delete message;
   }
+  this->server->send(200);
+}
+
+void esp::Http::handleVerifyFile() {
+  String fileName = this->server->arg("data");
+  esp::ArduinoFlash::verifyFile(fileName);
   this->server->send(200);
 }
 

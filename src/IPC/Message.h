@@ -14,7 +14,7 @@ namespace IPC {
     IPING = 0x20,
     IPONG = 0x21,
     LOG = 0x2A,
-    CESTAB = 0x30
+    CESTAB = 0x30,
   };
 
   class Message {
