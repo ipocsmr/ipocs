@@ -19,17 +19,9 @@ namespace esp {
         void index();
         void aIndex();
         void handleReason();
-        void handleUnitIdUpdate();
-        void handleSsidUpdate();
-        void handlePwdUpdate();
-        void handleApplyWiFi();
-        void handleSiteDataUpdate();
         void handleRestart(bool restartArduino);
         void handleNotFound();
-        void handleFileDelete();
         void handleFileUpload();
-        void handleArduinoFlash(bool verifyOnly);
-        void handleVerifyFile();
         void log(const String& string);
         void setArduinoVersion(uint8_t* versionBuffer);
       private:
@@ -40,6 +32,13 @@ namespace esp {
         ESP8266HTTPUpdateServer* updateServer;
         char* arduinoVersion;
         void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
+
+        String getJsonFormatted(String action, String value);
+        String getUnitId();
+        String getSsid();
+        String getPwd();
+        String getSiteData();
+        String getFiles();
     };
 }
 

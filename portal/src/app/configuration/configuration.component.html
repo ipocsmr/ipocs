@@ -1,0 +1,32 @@
+<mat-list>
+  <mat-list-item>
+    <mat-form-field appearance="fill">
+      <mat-label>Unit ID</mat-label>
+      <input matInput placeholder="Placeholder" #unitId [value]="unitIdValue">
+      <button mat-button matSuffix (click)="saveUnitId(unitId);">Save</button>
+      <mat-hint>1-65535</mat-hint>
+    </mat-form-field>
+  </mat-list-item>
+  <mat-list-item>
+    <mat-form-field appearance="fill">
+      <mat-label>NetworkSSID</mat-label>
+      <input matInput placeholder="Placeholder" #ssid [value]="networkSsidValue">
+      <button mat-button matSuffix (click)="saveSsid(ssid);">Save</button>
+    </mat-form-field>
+  </mat-list-item>
+  <mat-list-item>
+    <mat-form-field appearance="fill">
+      <mat-label>Network Password</mat-label>
+      <input matInput placeholder="Placeholder" #pwd [value]="networkPwdValue">
+      <button mat-button matSuffix (click)="savePwd(pwd);">Save</button>
+    </mat-form-field>
+  </mat-list-item>
+  <mat-list-item>
+    <mat-form-field appearance="fill">
+      <mat-label>Site Data</mat-label>
+      <input matInput placeholder="Placeholder" #siteData [value]="siteDataValue">
+      <button mat-button matSuffix (click)="saveSiteData(siteData);">Save</button>
+      <mat-hint>Site data in hex format, each byte seperated by a space</mat-hint>
+    </mat-form-field>
+  </mat-list-item>
+</mat-list>

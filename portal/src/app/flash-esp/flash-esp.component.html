@@ -1,0 +1,18 @@
+<mat-card>
+  Current ESP firmware version: {{ espService.versionEsp$ | async }}
+</mat-card>
+
+<mat-card>
+  <form method='POST' action='/update' enctype='multipart/form-data'>
+    Firmware:<br>
+    <input type='file' accept='.bin,.bin.gz' name='firmware'>
+    <button mat-raised-button type='submit' color='primary'>Apply firmware</button>
+  </form>
+
+  <br />
+  <form method='POST' action='/update' enctype='multipart/form-data'>
+    FileSystem:<br>
+    <input type='file' accept='.bin,.bin.gz' name='filesystem'>
+    <button mat-raised-button type='submit' color='primary'>Apply filesystem</button>
+  </form>
+</mat-card>
