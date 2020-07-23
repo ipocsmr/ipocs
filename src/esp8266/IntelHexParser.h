@@ -1,8 +1,10 @@
 #ifndef INTELHEXPARSER_H
 #define INTELHEXPARSER_H
 
-#include <FS.h>
+#include <LittleFS.h>
 #include <vector>
+#include <WString.h>
+#include <stdint.h>
 #define INTEL_HEX_MAX_RECORD 255
 
 namespace esp

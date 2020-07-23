@@ -6,7 +6,6 @@
 #include <ESP8266WebServer.h>
 #include <WebSocketsServer.h>
 #include <ESP8266HTTPUpdateServer.h>
-#include <ArduinoOTA.h>
 
 class String;
 
@@ -40,7 +39,7 @@ namespace esp {
         ESP8266WebServer* server;
         ESP8266HTTPUpdateServer* updateServer;
         char* arduinoVersion;
-        void webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length);
+        void webSocketEvent(uint8_t num, WStype_t type, uint8_t* payload, size_t length);
     };
 }
 

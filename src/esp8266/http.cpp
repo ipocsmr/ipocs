@@ -5,6 +5,8 @@
 #include <WString.h>
 #include <uCRC16Lib.h>
 #include "ArduinoFlash.h"
+#include <LittleFS.h>
+#include <ArduinoOTA.h>
 
 using namespace std::placeholders;
 
@@ -179,11 +181,12 @@ void esp::Http::aIndex() {
   String ip_str = String(ip[0]) + "." + ip[1] + "." + ip[2] + "." + ip[3];
   String html = "<html>\n";
   html += "<script>\n";
-  html += "function postIt(elem, url) {\n";
+  html += "function postIt(elem, url, doReload = false) {\n";
   html += "  var xhr = new XMLHttpRequest();\n";
   html += "  xhr.open('post', url);\n";
   html += "  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');\n";
   html += "  var input = document.getElementById(elem);\n";
+  html += "  if (doReload) xhr.addEventListener('load', (e) => { window.location.reload(true); });\n";
   html += "  xhr.send('data=' + encodeURIComponent(input.textContent));\n";
   html += "}\n";
   html += "function start() {";
@@ -205,6 +208,7 @@ void esp::Http::aIndex() {
   html += "    xhr.open(\"POST\", url, true);\n";
   html += "    var fd = new FormData();\n";
   html += "    fd.append('file', file)\n";
+  html += "    xhr.addEventListener('load', (e) => { window.location.reload(true); });\n";
   html += "    xhr.send(fd);\n";
   html += "}\n";
   html += "</script>\n";
@@ -212,15 +216,15 @@ void esp::Http::aIndex() {
   html += "Upload file: <input type=\"file\" id=\"file-input\" /><button onClick='doUpload();'>Upload</button>\n";
   html += "<table>\n";
   html += "<tr><th>Name</th><th>Size</th><th>File operations</th><th>Flash Commands</th></tr>\n";
-  SPIFFS.begin();
-  SPIFFS.mkdir("/hex");
-  Dir dir = SPIFFS.openDir("/hex");
+  LittleFS.begin();
+  LittleFS.mkdir("/hex");
+  Dir dir = LittleFS.openDir("/hex");
   uint8_t fileNum = 0;
   while (dir.next()) {
     File f = dir.openFile("r");
-    html += "<tr><td id='file" + String(fileNum) + "'>" + dir.fileName() + "</td><td>" + String(f.size()) + "</td><td>";
+    html += "<tr><td id='file" + String(fileNum) + "'>" + f.fullName() + "</td><td>" + String(f.size()) + "</td><td>";
     html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerifyFile\"); return false' href='#'>Verify File</a>&nbsp;";
-    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/fileDelete\"); return true' href='#'>Delete</a>";
+    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/fileDelete\", true); return true' href='#'>Delete</a>";
     html += "</td><td>";
     html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerify\"); return true' href='#'>Verify Flash</a>&nbsp;";
     html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoFlash\"); return false' href='#'>Flash</a>";
@@ -228,7 +232,7 @@ void esp::Http::aIndex() {
     fileNum++;
   }
   html += "</table>";
-  SPIFFS.end();
+  LittleFS.end();
   html += "<a href='/'>Back</a>";
   html += "</body></html>\n";
   this->server->send(200, "text/html", html);
@@ -239,13 +243,13 @@ static File fsUploadFile;
 void esp::Http::handleFileUpload() {
   HTTPUpload& upload = this->server->upload();
   if(upload.status == UPLOAD_FILE_START){
-    SPIFFS.begin();
+    LittleFS.begin();
     String filename = String(upload.filename);
     if(!filename.startsWith("/")) filename = "/" + filename;
-    SPIFFS.mkdir("/hex");
+    LittleFS.mkdir("/hex");
     filename = "/hex" + filename;
     this->log("Starting file upload " + filename);
-    fsUploadFile = SPIFFS.open(filename, "w+");            // Open the file for writing in SPIFFS (create if it doesn't exist)
+    fsUploadFile = LittleFS.open(filename, "w+");
     if (!!!fsUploadFile)
     {
       this->log("Failed to create file");
@@ -269,7 +273,7 @@ void esp::Http::handleFileUpload() {
       fsUploadFile.write(upload.buf, upload.currentSize);
       fsUploadFile.close();                               // Close the file again
       this->server->send(200);
-      SPIFFS.end();
+      LittleFS.end();
     } else {
       this->server->send(500, "text/plain", "500: couldn't create file");
     }
@@ -278,9 +282,9 @@ void esp::Http::handleFileUpload() {
 
 void esp::Http::handleFileDelete() {
   this->log("Deleting file: " + this->server->arg("data"));
-  SPIFFS.begin();
-  SPIFFS.remove(this->server->arg("data"));
-  SPIFFS.end();
+  LittleFS.begin();
+  LittleFS.remove(this->server->arg("data"));
+  LittleFS.end();
   this->server->send(200);
 }
 

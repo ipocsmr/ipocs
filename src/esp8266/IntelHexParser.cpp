@@ -8,8 +8,8 @@ esp::IntelHexParser::IntelHexParser()
 
 void esp::IntelHexParser::Open(String& fileName)
 {
-  SPIFFS.begin();
-  this->file = SPIFFS.open(fileName, "r");
+  LittleFS.begin();
+  this->file = LittleFS.open(fileName, "r");
   this->address = 0x0000U;
   if (!this->file)
   {
@@ -19,7 +19,7 @@ void esp::IntelHexParser::Open(String& fileName)
 
 void esp::IntelHexParser::Close()
 {
-  SPIFFS.end();
+  LittleFS.end();
 }
 
 uint8_t hex2byte(char ch)
