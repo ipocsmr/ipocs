@@ -12,3 +12,8 @@
 .vscode/ipch
 .pio/
 /data
+/dist
+
+# dependencies
+/portal/node_modules
+/node_modules
