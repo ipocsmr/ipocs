@@ -388,7 +388,7 @@ void esp::Http::setArduinoVersion(uint8_t* arduinoVersion) {
     delete this->arduinoVersion;
     this->arduinoVersion = new char[strlen((const char*)arduinoVersion) + 1];
     memcpy(this->arduinoVersion, arduinoVersion, strlen((const char*)arduinoVersion) + 1);
-    String newVersion = this->getJsonFormatted(String("arduinoVersion"), String(this->arduinoVersion));
+    String newVersion = this->getJsonFormatted(String("versionArduino"), String(this->arduinoVersion));
     this->webSocket->broadcastTXT(newVersion);
   }
 }
