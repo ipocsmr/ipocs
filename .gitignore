@@ -17,3 +17,4 @@
 # dependencies
 /portal/node_modules
 /node_modules
+/portal/src/version.ts

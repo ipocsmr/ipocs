@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { BehaviorSubject } from 'rxjs';
 import { ArrayType } from '@angular/compiler';
+import { environment } from 'src/environments/environment';
 
 export class Message {
   value: string;
@@ -25,6 +26,7 @@ export class EspService {
   public logs$ = new BehaviorSubject<Array<string>>([]);
   public versionArduino$ = new BehaviorSubject<string>("");
   public versionEsp$ = new BehaviorSubject<string>("");
+  public connected$ = new BehaviorSubject<boolean>(false);
 
   private webSocket: WebSocket;
   private connectTimer: number;
@@ -35,7 +37,11 @@ export class EspService {
   }
 
   private connect(): void {
-    this.webSocket = new WebSocket("ws://" + window.location.hostname + ":81");
+    let hostName = window.location.hostname;
+    if (!environment.production) {
+      hostName = "172.16.0.218";
+    }
+    this.webSocket = new WebSocket("ws://" + hostName + ":81");
     this.webSocket.onopen = (event) => this.onOpen(event);
     this.webSocket.onclose = (event) => this.onClose(event);
     this.webSocket.onmessage = (message) => this.onMessage(message);
@@ -45,6 +51,9 @@ export class EspService {
     console.log(event);
     clearTimeout(this.connectTimer);
     this.pinger = setInterval(() => {
+      if (!this.connected$.value) {
+        this.connected$.next(true);
+      }
       this.sendMessage({
         action: "ping",
         value: null
@@ -54,6 +63,7 @@ export class EspService {
 
   private onClose(event: Event): void {
     console.log(event);
+    this.connected$.next(false);
     clearTimeout(this.connectTimer);
     clearInterval(this.pinger);
     this.connectTimer = setTimeout(() => {

@@ -11,6 +11,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { FlexLayoutModule } from '@angular/flex-layout';
 import { MatFormFieldModule, MAT_FORM_FIELD_DEFAULT_OPTIONS } from '@angular/material/form-field';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
@@ -21,6 +22,9 @@ import { ConfigurationComponent } from './configuration/configuration.component'
 import { EspService } from './esp.service';
 import { LoggingComponent } from './logging/logging.component';
 import { FlashEspComponent } from './flash-esp/flash-esp.component';
+import { OverlayModule } from '@angular/cdk/overlay';
+import { PortalModule } from '@angular/cdk/portal';
+import { SpinnerComponent } from './spinner/spinner.component';
 
 @NgModule({
   declarations: [
@@ -30,8 +34,12 @@ import { FlashEspComponent } from './flash-esp/flash-esp.component';
     DashboardComponent,
     LoggingComponent,
     FlashEspComponent,
+    SpinnerComponent,
   ],
   imports: [
+    MatProgressSpinnerModule,
+    OverlayModule,
+    PortalModule,
     MatToolbarModule,
     MatGridListModule,
     MatTableModule,
