@@ -35,8 +35,7 @@ export class EspService {
   }
 
   private connect(): void {
-    //this.webSocket = new WebSocket("ws://" + window.location.hostname + ":81");
-    this.webSocket = new WebSocket("ws://172.16.0.218:81");
+    this.webSocket = new WebSocket("ws://" + window.location.hostname + ":81");
     this.webSocket.onopen = (event) => this.onOpen(event);
     this.webSocket.onclose = (event) => this.onClose(event);
     this.webSocket.onmessage = (message) => this.onMessage(message);
