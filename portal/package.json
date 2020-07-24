@@ -3,12 +3,14 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
+    "prestart": "node ./version.js",
     "start": "ng serve",
+    "prebuild": "node ./version.js",
     "build": "ng build",
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "ng e2e",
-    "prod": "ng build --prod && gzip ../data/*"
+    "prod": "node ./version.js && ng build --prod && gzip ../data/*"
   },
   "private": true,
   "dependencies": {

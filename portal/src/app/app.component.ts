@@ -3,6 +3,7 @@ import { EspService } from './esp.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { filter, map } from 'rxjs/operators';
+import { Version } from '../version'
 
 @Component({
   selector: 'app-root',
@@ -11,6 +12,7 @@ import { filter, map } from 'rxjs/operators';
 })
 export class AppComponent {
   public title: string;
+  public version: string = Version;
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, private titleService: Title) {
   }

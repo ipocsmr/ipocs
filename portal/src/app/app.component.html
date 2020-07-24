@@ -1,3 +1,43 @@
+<mat-toolbar color="primary">
+  <div fxHide.gt-xs>
+    <button mat-icon-button (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+  </div>
+  <div>
+    <a>{{title}}</a>
+  </div>
+  <div fxFlex fxLayout fxLayoutAlign="flex-end" fxHide.xs>
+    <ul fxLayout fxLayoutGap="20px" class="navigation-items">
+      <!--<li>
+        <a routerLink="/dashboard">
+          <span class="label">Dashboard</span>
+        </a>
+      </li>-->
+      <li>
+        <a routerLink="/configuration">
+          <span class="label">Configuration</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/flash-arduino">
+          <span class="label">Flash Arduino</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/flash-esp">
+          <span class="label">Flash ESP</span>
+        </a>
+      </li>
+      <li>
+        <a routerLink="/logging">
+          <span class="label">Logging</span>
+        </a>
+      </li>
+    </ul>
+  </div>
+</mat-toolbar>
+
 <mat-sidenav-container>
   <mat-sidenav #sidenav role="navigation">
     <mat-nav-list>
@@ -19,48 +59,8 @@
     </mat-nav-list>
   </mat-sidenav>
   <mat-sidenav-content>
-    <mat-toolbar color="primary">
-      <div fxHide.gt-xs>
-        <button mat-icon-button (click)="sidenav.toggle()">
-          <mat-icon>menu</mat-icon>
-        </button>
-        &nbsp;
-      </div>
-      <div>
-        <a>
-          {{title}}
-        </a>
-      </div>
-      <div fxFlex fxLayout fxLayoutAlign="flex-end" fxHide.xs>
-        <ul fxLayout fxLayoutGap="20px" class="navigation-items">
-          <!--<li>
-            <a routerLink="/dashboard">
-              <span class="label">Dashboard</span>
-            </a>
-          </li>-->
-          <li>
-            <a routerLink="/configuration">
-              <span class="label">Configuration</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/flash-arduino">
-              <span class="label">Flash Arduino</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/flash-esp">
-              <span class="label">Flash ESP</span>
-            </a>
-          </li>
-          <li>
-            <a routerLink="/logging">
-              <span class="label">Logging</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </mat-toolbar>
     <router-outlet></router-outlet>
   </mat-sidenav-content>
 </mat-sidenav-container>
+
+<mat-toolbar class="footer">UI Version: {{version}}</mat-toolbar>
