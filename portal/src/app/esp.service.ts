@@ -3,6 +3,7 @@ import { connectableObservableDescriptor } from 'rxjs/internal/observable/Connec
 import { BehaviorSubject } from 'rxjs';
 import { ArrayType } from '@angular/compiler';
 import { environment } from 'src/environments/environment';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 export class Message {
   value: string;
@@ -27,12 +28,16 @@ export class EspService {
   public versionArduino$ = new BehaviorSubject<string>("");
   public versionEsp$ = new BehaviorSubject<string>("");
   public connected$ = new BehaviorSubject<boolean>(false);
+  public verifyFileProgress$ = new BehaviorSubject<number>(undefined);
+  public operationInProgress$ = new BehaviorSubject<boolean>(false);
+  public progress$ = new BehaviorSubject<number>(0);
+  public progressMessage$ = new BehaviorSubject<string>(undefined);
 
   private webSocket: WebSocket;
   private connectTimer: number;
   private pinger: number;
 
-  constructor() {
+  constructor(private snackBar: MatSnackBar) {
     this.connect();
   }
 
@@ -73,7 +78,9 @@ export class EspService {
 
   private onMessage(message: MessageEvent) {
     let data: Message = JSON.parse(message.data);
-    console.log(data);
+    if (data.action != "log") {
+      console.log(data);
+    }
     switch (data.action) {
       case "valueUnitId":
         this.unitId$.next(parseInt(data.value));
@@ -95,6 +102,34 @@ export class EspService {
         break;
       case "versionEsp":
         this.versionEsp$.next(data.value);
+        break;
+      case "verifyBegin":
+        this.verifyFileProgress$.next(0);
+        break;
+      case "verifyProgress":
+        this.verifyFileProgress$.next(parseInt(data.value));
+        break;
+      case "verifyEnd":
+        this.verifyFileProgress$.next(undefined);
+        break;
+      case "opInProgress":
+        this.operationInProgress$.next(data.value == 'true');
+        break;
+      case "progress":
+        this.progress$.next(parseInt(data.value));
+        break;
+      case "progressMessage":
+        this.progressMessage$.next(data.value);
+        break;
+      case "success":
+        this.snackBar.open(data.value, undefined, {
+          duration: 2000
+        });
+        break;
+      case "error":
+        this.snackBar.open(data.value, undefined, {
+          duration: 5000
+        });
         break;
       case "log":
         this.logs$.next(this.logs$.value.concat([data.value]));

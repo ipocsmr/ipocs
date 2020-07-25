@@ -1,4 +1,4 @@
-import { Component, ViewContainerRef, ViewChildren, QueryList } from '@angular/core';
+import { Component, ViewContainerRef, ViewChildren, QueryList, ComponentRef } from '@angular/core';
 import { Overlay, OverlayConfig } from '@angular/cdk/overlay';
 import { EspService } from './esp.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
@@ -8,6 +8,7 @@ import { Version } from '../version'
 import { TemplatePortalDirective, Portal, ComponentPortal } from '@angular/cdk/portal';
 import { FlashEspComponent } from './flash-esp/flash-esp.component';
 import { SpinnerComponent } from './spinner/spinner.component';
+import { ProgressComponent } from './progress/progress.component';
 
 @Component({
   selector: 'app-root',
@@ -21,6 +22,13 @@ export class AppComponent {
     hasBackdrop: true,
     backdropClass: 'dark-backdrop',
     positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically()
+  }));
+  private portalRef: ComponentRef<ProgressComponent> = undefined;
+
+  private overlayRef = this.overlay.create(new OverlayConfig({
+    hasBackdrop: false,
+    width: '80%',
+    positionStrategy: this.overlay.position().global().centerHorizontally().bottom("80px")
   }));
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, private titleService: Title,
@@ -43,15 +51,39 @@ export class AppComponent {
         this.title = ttl;
         this.titleService.setTitle(ttl);
       });
-      this.espService.connected$.subscribe((isConnected) => {
-        if (isConnected) {
-          this.spinnerOverlayRef.detach();
-        } else {
-          if (!this.spinnerOverlayRef.hasAttached()) {
-            const loggingPortal = new ComponentPortal(SpinnerComponent);
-            this.spinnerOverlayRef.attach(loggingPortal);
-          }
+    this.espService.connected$.subscribe((isConnected) => {
+      if (isConnected) {
+        this.spinnerOverlayRef.detach();
+      } else {
+        if (!this.spinnerOverlayRef.hasAttached()) {
+          const loggingPortal = new ComponentPortal(SpinnerComponent);
+          this.spinnerOverlayRef.attach(loggingPortal);
         }
-      });
+      }
+    });
+    this.espService.operationInProgress$.subscribe((inProgress) => {
+      if (this.portalRef === undefined && inProgress) {
+        const portal = new ComponentPortal(ProgressComponent);
+        this.portalRef = this.overlayRef.attach(portal);
+        this.portalRef.instance.message$.next("Operation started...");
+      }
+      if (this.portalRef !== undefined && !inProgress) {
+        //this.portalRef.instance.message = "Done";
+        setTimeout(() => {
+          this.overlayRef.detach();
+          this.portalRef = undefined;
+        }, 1000);
+      }
+    });
+    this.espService.progress$.subscribe((progress) => {
+      if (this.portalRef !== undefined) {
+        this.portalRef.instance.progress$.next(progress);
+      }
+    });
+    this.espService.progressMessage$.subscribe((message) => {
+      if (this.portalRef !== undefined) {
+        this.portalRef.instance.message$.next(message);
+      }
+    });
   }
 }

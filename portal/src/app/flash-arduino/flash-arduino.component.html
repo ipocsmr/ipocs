@@ -1,7 +1,7 @@
 <mat-card>
   Current Arduino firmware version: {{ espService.versionArduino$ | async }}
   <div fxFlex fxLayout fxLayoutAlign="flex-end">
-    <button type="button" mat-raised-button (click)="fileInput.click()">Upload file</button>
+    <button type="button" mat-raised-button (click)="fileInput.click()" [disabled]="espService.operationInProgress$ | async">Upload file</button>
     <input hidden (change)="onFileSelected($event)" #fileInput type="file" id="file">
   </div>
 </mat-card>
@@ -25,9 +25,9 @@
     <ng-container matColumnDef="fileOps">
       <th mat-header-cell *matHeaderCellDef> File Operations </th>
       <td mat-cell *matCellDef="let element"> 
-        <a (click)="verifyFile(element)">Verify</a>
+        <button mat-button (click)="verifyFile(element)" [disabled]="espService.operationInProgress$ | async">Verify</button>
         &nbsp;
-        <a (click)="deleteFile(element)">Delete</a>
+        <button mat-button (click)="deleteFile(element)" [disabled]="espService.operationInProgress$ | async">Delete</button>
       </td>
     </ng-container>
 
@@ -35,9 +35,9 @@
     <ng-container matColumnDef="flashOps">
       <th mat-header-cell *matHeaderCellDef> Flash Operations </th>
       <td mat-cell *matCellDef="let element"> 
-        <a (click)="verifyFlash(element)">Verify</a>
+        <button mat-button (click)="verifyFlash(element)" [disabled]="espService.operationInProgress$ | async">Verify</button>
         &nbsp;
-        <a (click)="programFlash(element)">Flash</a>
+        <button mat-button (click)="programFlash(element)" [disabled]="espService.operationInProgress$ | async">Flash</button>
       </td>
     </ng-container>
     <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>

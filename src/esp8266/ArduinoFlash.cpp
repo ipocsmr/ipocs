@@ -24,13 +24,15 @@ void esp::ArduinoFlash::initiate(String& fileName, bool verify) {
   this->hexParser->Open(fileName);
   progress = stateInit;
   this->verifyOnly = verify;
+  esp::Http::instance().broadcastOpInPorgress(this->isBusy());
   this->nextCommand = 10U;
 }
 
-void esp::ArduinoFlash::verifyFile(String& fileName) {
+void esp::ArduinoFlash::verifyFile(String& fileName, std::function<void(uint32_t, uint32_t)> cb) {
   esp::Http::instance().log("Testing loading of file " + fileName);
   IntelHexParser* hexParser = new IntelHexParser();
   hexParser->Open(fileName);
+  cb(hexParser->position(), hexParser->size());
   while (hexParser->EnsurePage() >= 0 && !hexParser->data.empty()) {
     String printData;
     for (uint8_t i = 0; i < PAGE_SIZE; i++)
@@ -45,7 +47,11 @@ void esp::ArduinoFlash::verifyFile(String& fileName) {
     }
     esp::Http::instance().log("FullPag: " + hexParser->padString(String(hexParser->address, HEX), 4) + ", Data: " + printData);
     hexParser->address += PAGE_SIZE;
+    if (hexParser->position() <= hexParser->size()) {
+      cb(hexParser->position(), hexParser->size());
+    }
   }
+  cb(1, 1);
   esp::Http::instance().log("DONE Testing loading of file " + fileName);
   hexParser->Close();
   delete hexParser;
@@ -68,6 +74,7 @@ void esp::ArduinoFlash::loop() {
   switch (progress) {
     case stateInit: {
       esp::Http::instance().log("Restarting arduino...");
+      esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Restarting arduino...");
       progress = stateRestart;
       IPC::Message* ipcMsg = IPC::Message::create();
       ipcMsg->RT_TYPE = IPC::RESTART;
@@ -88,8 +95,10 @@ void esp::ArduinoFlash::loop() {
         esp::Http::instance().log("Read unexpected char: 0x" + this->hexParser->padString(String(Serial.read(), 16)));
       }
       if (millis() - ulStartOfFlashTime > 1000) {
+        esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Sync with arduino bootloader failed, aborting...");
         esp::Http::instance().log("Operation timeout, aborting...");
-        progress = stateInactive;
+        esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
+        progress = stateAbort;
       } else {
         esp::Http::instance().log("Trying to sync with optiboot...");
         Serial.write(STK_GET_SYNC);
@@ -108,6 +117,7 @@ void esp::ArduinoFlash::loop() {
         return;
       }
       if (buffer[0] == STK_INSYNC && buffer[1] == STK_OK) {
+        esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Starting operation...");
         esp::Http::instance().log("Arduino reports in sync... proceeding");
         int8_t result = 1;
         while (this->hexParser->data.size() < PAGE_SIZE && result > 0)
@@ -115,6 +125,7 @@ void esp::ArduinoFlash::loop() {
           result = this->hexParser->EnsurePage();
           if (result == -1)
           {
+            esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
             esp::Http::instance().log("Parsing failed. Aborting prog mode");
             progress = stateExitProgMode;
             this->nextCommand = 10U;
@@ -123,6 +134,7 @@ void esp::ArduinoFlash::loop() {
         }
         progress = stateEnterProgMode;
       } else {
+        esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
         esp::Http::instance().log("Got somthing else...");
       }
       this->nextCommand = 10U;
@@ -138,7 +150,13 @@ void esp::ArduinoFlash::loop() {
       size_t length = Serial.readBytes(buffer, 2);
       if (length == 2 && buffer[0] == STK_INSYNC && buffer[1] == STK_OK) {
         progress = stateLoadAddress;
+        if (this->verifyOnly) {
+          esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Verifying...");
+        } else {
+          esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Programming...");
+        }
       } else {
+        esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
         esp::Http::instance().log("Got Unexpexted value " + String(buffer[0], 16) + "," + String(buffer[1], 16));
         progress = stateExitProgMode;
       }
@@ -161,6 +179,7 @@ void esp::ArduinoFlash::loop() {
       if (length == 2 && buffer[0] == STK_INSYNC && buffer[1] == STK_OK) {
         progress = this->verifyOnly ? stateVerifyPage : stateProgMem;
       } else {
+        esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
         esp::Http::instance().log("Got Unexpexted value " + String(buffer[0], 16) + "," + String(buffer[1], 16));
         progress = stateExitProgMode;
       }
@@ -204,11 +223,19 @@ void esp::ArduinoFlash::loop() {
           result = this->hexParser->EnsurePage();
           if (result == -1)
           {
+            esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
+            esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Failed parsing");
             esp::Http::instance().log("Parsing failed. Aborting prog mode");
             progress = stateExitProgMode;
             this->nextCommand = 10U;
             return;
           }
+        }
+        uint32_t progPercent = (uint32_t)(((float)this->hexParser->position() / this->hexParser->size()) * 100);
+        String strProgress = String(progPercent <= 100 ? progPercent : 100);
+        esp::Http::instance().broadcastMessage(esp::Http::PROGRESS, strProgress.c_str());
+        if (this->hexParser->data.size() == 0) {
+          esp::Http::instance().broadcastMessage(esp::Http::SUCCESS, "Programming successful...");
         }
         progress = this->hexParser->data.size() == 0 ? stateExitProgMode : stateLoadAddress;
       } else {
@@ -251,6 +278,7 @@ void esp::ArduinoFlash::loop() {
         this->hexParser->address += PAGE_SIZE;
         if (!verified)
         {
+          esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Verification failed...");
           esp::Http::instance().log("Unable to verify page, exiting!");
         }
         else
@@ -261,6 +289,7 @@ void esp::ArduinoFlash::loop() {
             result = this->hexParser->EnsurePage();
             if (result == -1)
             {
+              esp::Http::instance().broadcastMessage(esp::Http::ERROR, "Operation failed...");
               esp::Http::instance().log("Parsing failed. Aborting prog mode");
               progress = stateExitProgMode;
               this->nextCommand = 10U;
@@ -269,8 +298,12 @@ void esp::ArduinoFlash::loop() {
           }
           if (this->hexParser->data.size() == 0 && verified)
           {
+            esp::Http::instance().broadcastMessage(esp::Http::SUCCESS, "Verification successful...");
             esp::Http::instance().log("Verification successful");
           }
+          uint32_t progPercent = (uint32_t)(((float)this->hexParser->position() / this->hexParser->size()) * 100);
+          String strProgress = String(progPercent <= 100 ? progPercent : 100);
+          esp::Http::instance().broadcastMessage(esp::Http::PROGRESS, strProgress.c_str());
           progress = this->hexParser->data.size() == 0 ? stateExitProgMode : stateLoadAddress;
         }
         
@@ -286,8 +319,9 @@ void esp::ArduinoFlash::loop() {
       Serial.write(STK_LEAVE_PROGMODE);
       Serial.write(CRC_EOP);
       progress = stateInactive;
-      
       esp::Http::instance().log("Programming done rebooting arduino...");
+      esp::Http::instance().broadcastMessage(esp::Http::PROGRESS_MESSAGE, "Operation done...");
+      esp::Http::instance().broadcastOpInPorgress(this->isBusy());
       this->hexParser->Close();
       this->nextCommand = 10U;
     break; }
@@ -302,6 +336,11 @@ void esp::ArduinoFlash::loop() {
       }
       this->nextCommand = 2000U;
     break; }
+    case stateAbort: {
+      progress = stateInactive;
+      esp::Http::instance().broadcastOpInPorgress(this->isBusy());
+      this->nextCommand = 1U;
+    }
     case stateInactive: {
       esp::ArduinoConnection::instance().begin();
     break; }

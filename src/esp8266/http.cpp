@@ -92,6 +92,16 @@ void esp::Http::loop() {
   this->server->handleClient();
 }
 
+void esp::Http::broadcastOpInPorgress(bool isBusy) {
+  String isBusyStr = this->getJsonFormatted(String("opInProgress"), String(isBusy ? "true" : "false"));
+  this->webSocket->broadcastTXT(isBusyStr);
+}
+
+void esp::Http::broadcastMessage(const char* action, const char* value) {
+  String msg = this->getJsonFormatted(String(action), String(value));
+  this->webSocket->broadcastTXT(msg);
+}
+
 void esp::Http::log(const String& string) {
   String ss = this->getJsonFormatted(String("log"), string);
   this->webSocket->broadcastTXT(ss);
@@ -106,14 +116,18 @@ String esp::Http::getJsonFormatted(String action, String value) {
   return output;
 }
 
+String esp::Http::getJsonFormatted(const char* const action, String value) {
+  return this->getJsonFormatted(String(action), value);
+}
+
 String esp::Http::getUnitId() {
-  return this->getJsonFormatted(String("valueUnitId"), String(Configuration::getUnitID()));
+  return this->getJsonFormatted("valueUnitId", String(Configuration::getUnitID()));
 }
 
 String esp::Http::getSsid() {
   char ssid[33];
   Configuration::getSSID(ssid);
-  return this->getJsonFormatted(String("valueSsid"), String(ssid));
+  return this->getJsonFormatted("valueSsid", String(ssid));
 }
 
 String esp::Http::getPwd() {
@@ -170,6 +184,8 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     this->webSocket->sendTXT(num, aVersion);
     String eVersion = this->getJsonFormatted(String("versionEsp"), String(VERSION_STRING));
     this->webSocket->sendTXT(num, eVersion);
+    String isBusy = this->getJsonFormatted(String("opInProgress"), String(esp::ArduinoFlash::instance().isBusy() ? "true" : "false"));
+    this->webSocket->sendTXT(num, isBusy);
   }
   if (type == WStype_TEXT){
     StaticJsonDocument<200> doc;
@@ -219,7 +235,14 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     }
     if (doc["action"] == "verifyFile") {
       String fileName((const char*)doc["value"]);
-      esp::ArduinoFlash::verifyFile(fileName);
+      String verBeg = this->getJsonFormatted(String("verifyBegin"), String(""));
+      this->webSocket->sendTXT(num, verBeg);
+      esp::ArduinoFlash::verifyFile(fileName, [this, num](uint32_t pos, uint32_t max) -> void {
+        String aVersion = this->getJsonFormatted(String("verifyProgress"), String((uint32_t)(((float)pos / max) * 100)));
+        this->webSocket->sendTXT(num, aVersion);
+      });
+      String verEnd = this->getJsonFormatted(String("verifyEnd"), String(""));
+      this->webSocket->sendTXT(num, verEnd);
     }
     if (doc["action"] == "verifyFlash") {
       String fileName((const char*)doc["value"]);

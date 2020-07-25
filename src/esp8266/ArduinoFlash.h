@@ -19,6 +19,7 @@ enum FlashProgress {
   stateVerifyPageAck,
   stateExitProgMode,
   stateExitProgModeAck,
+  stateAbort,
 };
 
 namespace esp {
@@ -26,8 +27,10 @@ namespace esp {
     class ArduinoFlash {
         public:
             static ArduinoFlash& instance();
-            static void verifyFile(String& fileName);
+            static void verifyFile(String& fileName, std::function<void(uint32_t, uint32_t)> cb);
             void initiate(String& fileName, bool verify = false);
+
+            bool isBusy() { return this->progress != stateInactive; }
 
             void loop();
         private:

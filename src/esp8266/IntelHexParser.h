@@ -20,6 +20,9 @@ namespace esp
     size_t EnsurePage();
     String padString(String toPad, uint8_t padSize = 2);
 
+    size_t size() { return this->file.size(); }
+    size_t position() { return this->file.position(); }
+
     uint16_t address;
     std::vector<uint8_t> data;
   private:
