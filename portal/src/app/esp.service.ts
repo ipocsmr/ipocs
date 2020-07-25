@@ -132,7 +132,7 @@ export class EspService {
         });
         break;
       case "log":
-        this.logs$.next(this.logs$.value.concat([data.value]));
+        this.logs$.next([data.value, ...this.logs$.value]);
         break;
     }
   }

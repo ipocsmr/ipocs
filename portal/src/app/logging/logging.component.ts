@@ -18,4 +18,8 @@ export class LoggingComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  clearLogs(): void {
+    this.espService.logs$.next([]);
+  }
+
 }
