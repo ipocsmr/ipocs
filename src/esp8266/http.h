@@ -21,7 +21,6 @@ namespace esp {
         void loop();
 
         void index();
-        void aIndex();
         void handleReason();
         void handleRestart(bool restartArduino);
         void handleNotFound();

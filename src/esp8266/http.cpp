@@ -69,7 +69,6 @@ esp::Http::Http() {
     this->server = new ESP8266WebServer();
     
     this->server->on("/reason", [this]() { this->handleReason(); });
-    this->server->on("/aupdate", [this]() {this->aIndex(); });
     this->server->on("/api/fileUpload", HTTP_POST, [this]() { this->server->send(200); },  [this]() { this->handleFileUpload(); });
     this->server->onNotFound([this]() { this->handleNotFound(); });
     this->updateServer = new ESP8266HTTPUpdateServer(80);
@@ -273,70 +272,6 @@ void esp::Http::handleReason() {
   rst_info *myResetInfo;
   myResetInfo = ESP.getResetInfoPtr();
   String html = "<html><body>" + String(myResetInfo->reason) + ", " + String(myResetInfo->exccause) + "</body></body>";
-  this->server->send(200, "text/html", html);
-}
-void esp::Http::aIndex() {
-  auto ip = WiFi.localIP();
-  if (ip[0] == 0) {
-    ip = WiFi.softAPIP();
-  }
-  String ip_str = String(ip[0]) + "." + ip[1] + "." + ip[2] + "." + ip[3];
-  String html = "<html>\n";
-  html += "<script>\n";
-  html += "function postIt(elem, url, doReload = false) {\n";
-  html += "  var xhr = new XMLHttpRequest();\n";
-  html += "  xhr.open('post', url);\n";
-  html += "  xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');\n";
-  html += "  var input = document.getElementById(elem);\n";
-  html += "  if (doReload) xhr.addEventListener('load', (e) => { window.location.reload(true); });\n";
-  html += "  xhr.send('data=' + encodeURIComponent(input.textContent));\n";
-  html += "}\n";
-  html += "function start() {";
-  html += "  var connection = new WebSocket('ws://";
-  html += ip_str;
-  html += ":81');";
-  html += "  connection.onmessage = function (e) {\n";
-  html += "    console.log('Server: ', e.data);\n";
-  html += "  };";
-  html += "  connection.onclose = function() {";
-  html += "    start();";
-  html += "  };";
-  html += "}";
-  html += "start();";
-  html += "function doUpload() {\n";
-  html += "  var file = document.getElementById(\"file-input\").files[0];\n";
-  html += "    var xhr = new XMLHttpRequest();\n";
-  html += "    var url = '/api/fileUpload';\n";
-  html += "    xhr.open(\"POST\", url, true);\n";
-  html += "    var fd = new FormData();\n";
-  html += "    fd.append('file', file)\n";
-  html += "    xhr.addEventListener('load', (e) => { window.location.reload(true); });\n";
-  html += "    xhr.send(fd);\n";
-  html += "}\n";
-  html += "</script>\n";
-  html += "<body><h1>IPOCS Configuration Tool - Arduino flashing</h1><br />\n";
-  html += "Upload file: <input type=\"file\" id=\"file-input\" /><button onClick='doUpload();'>Upload</button>\n";
-  html += "<table>\n";
-  html += "<tr><th>Name</th><th>Size</th><th>File operations</th><th>Flash Commands</th></tr>\n";
-  LittleFS.begin();
-  LittleFS.mkdir("/hex");
-  Dir dir = LittleFS.openDir("/hex");
-  uint8_t fileNum = 0;
-  while (dir.next()) {
-    File f = dir.openFile("r");
-    html += "<tr><td id='file" + String(fileNum) + "'>" + f.fullName() + "</td><td>" + String(f.size()) + "</td><td>";
-    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerifyFile\"); return false' href='#'>Verify File</a>&nbsp;";
-    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/fileDelete\", true); return true' href='#'>Delete</a>";
-    html += "</td><td>";
-    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoVerify\"); return true' href='#'>Verify Flash</a>&nbsp;";
-    html += "<a onClick='postIt(\"file" + String(fileNum) + "\", \"/api/arduinoFlash\"); return false' href='#'>Flash</a>";
-    html += "</td></tr>";
-    fileNum++;
-  }
-  html += "</table>";
-  LittleFS.end();
-  html += "<a href='/'>Back</a>";
-  html += "</body></html>\n";
   this->server->send(200, "text/html", html);
 }
 
