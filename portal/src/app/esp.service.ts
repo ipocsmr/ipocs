@@ -157,14 +157,14 @@ export class EspService {
 
   public setPwd(ssid: string): void {
     this.sendMessage({
-      action: "setSsid",
+      action: "setPwd",
       value: ssid
     });
   }
 
   public setSiteData(ssid: string): void {
     this.sendMessage({
-      action: "setSsid",
+      action: "setSiteData",
       value: ssid
     });
   }
