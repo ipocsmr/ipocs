@@ -29,4 +29,10 @@
       <mat-hint>Site data in hex format, each byte seperated by a space</mat-hint>
     </mat-form-field>
   </mat-list-item>
+  <mat-list-item>
+    <button mat-stroked-button (click)="restartArduino();">Restart Arduino</button>&nbsp;
+    <button mat-stroked-button (click)="restartEsp();">Restart ESP</button>&nbsp;
+    <button mat-stroked-button (click)="applyWiFi();">Apply WiFi settings</button>&nbsp;
+    <button mat-stroked-button (click)="resetEsp();" color="warn">Reset ESP</button>
+  </mat-list-item>
 </mat-list>

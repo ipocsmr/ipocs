@@ -197,21 +197,28 @@ export class EspService {
     });
   }
 
-  public restartArduino(fileName: string): void {
+  public restartArduino(): void {
     this.sendMessage({
       action: "restartArduino",
       value: null
     });
   }
 
-  public restartEsp(fileName: string): void {
+  public restartEsp(): void {
     this.sendMessage({
       action: "restartEsp",
       value: null
     });
   }
 
-  public resetEsp(fileName: string): void {
+  public applyWiFi(): void {
+    this.sendMessage({
+      action: "applyWiFi",
+      value: null
+    });
+  }
+
+  public resetEsp(): void {
     this.sendMessage({
       action: "resetEsp",
       value: null

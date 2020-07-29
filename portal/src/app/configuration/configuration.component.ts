@@ -46,4 +46,22 @@ export class ConfigurationComponent implements OnInit {
   saveSiteData(element: HTMLInputElement): void {
     this.espService.setSiteData(element.value);
   }
+
+  restartArduino(): void {
+    this.espService.restartArduino();
+  }
+
+  restartEsp(): void {
+    this.espService.restartEsp();
+  }
+
+  applyWiFi(): void {
+    this.espService.applyWiFi();
+  }
+
+  resetEsp(): void {
+    if (confirm("Are you sure to reset/erase ESP settings?")) {
+      this.espService.resetEsp();
+    }
+  }
 }

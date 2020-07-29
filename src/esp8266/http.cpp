@@ -263,6 +263,9 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
       ESP.eraseConfig();
       this->handleRestart(false);
     }
+    if (doc["action"] == "applyWiFi") {
+      wifi_station_disconnect();
+    }
   }
 }
 
@@ -376,7 +379,7 @@ void esp::Http::handleFileUpload() {
 
 void esp::Http::handleRestart(bool restartArduino) {
   if (!restartArduino) {
-    ESP.reset();
+    ESP.restart();
   } else {
     this->log("Resetting arduino");
     IPC::Message *message = IPC::Message::create();
