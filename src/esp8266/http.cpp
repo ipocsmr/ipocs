@@ -119,8 +119,10 @@ String esp::Http::getJsonFormatted(const char* const action, String value) {
   return this->getJsonFormatted(String(action), value);
 }
 
-String esp::Http::getUnitId() {
-  return this->getJsonFormatted("valueUnitId", String(Configuration::getUnitID()));
+String esp::Http::getUnitName() {
+  char unitName[32];
+  Configuration::getUnitName(unitName);
+  return this->getJsonFormatted("valueUnitName", String(unitName));
 }
 
 String esp::Http::getSsid() {
@@ -169,7 +171,7 @@ String esp::Http::getFiles() {
 
 void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, size_t length) {
   if (type == WStype_CONNECTED) {
-    String txtUnitId = this->getUnitId();
+    String txtUnitId = this->getUnitName();
     this->webSocket->sendTXT(num, txtUnitId);
     String txtSsid = this->getSsid();
     this->webSocket->sendTXT(num, txtSsid);
@@ -192,9 +194,9 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     if (doc["action"] == "ping") {
       String pong = this->getJsonFormatted(String("ping"), String(""));
     }
-    if (doc["action"] == "setUnitId") {
-      Configuration::setUnitID(String((const char*)doc["value"]).toInt());
-      String txtUnitId = this->getUnitId();
+    if (doc["action"] == "setUnitName") {
+      Configuration::setUnitName((const char*)doc["value"]);
+      String txtUnitId = this->getUnitName();
       this->webSocket->broadcastTXT(txtUnitId);
     }
     if (doc["action"] == "setSsid") {

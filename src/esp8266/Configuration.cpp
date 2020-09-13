@@ -4,16 +4,35 @@
 #include <ESP8266WiFi.h>
 #include <uCRC16Lib.h>
 
-uint16_t Configuration::getUnitID()
+void Configuration::getUnitName(char unitName[])
 {
   uint16_t value = (EEPROM.read(0) << 8) + EEPROM.read(1);
-  return value;
+  if (value > 30) {
+    return;
+  }
+  size_t i;
+  for (i = 0; i < value; i++) {
+    unitName[i] = EEPROM.read(990 + i);
+    if (unitName[i] == 0x00) {
+      break;
+    }
+  }
+  unitName[value] = 0x00;
+  if (i != value || unitName[i] != 0x00) {
+    sprintf(unitName, "ipocs_%06x", ESP.getChipId());
+    i = strlen(unitName);
+  }
 }
 
-void Configuration::setUnitID(uint16_t unitID)
+void Configuration::setUnitName(const char unitName[])
 {
+  uint8_t unitID = strlen(unitName);
   EEPROM.write(0, unitID >> 8);
   EEPROM.write(1, unitID & 0xFF);
+  for (int i = 0; i < unitID; i++) {
+    EEPROM.write(990 + i, unitName[i]);
+  }
+  EEPROM.write(990 + unitID + 1, 0x00);
   EEPROM.commit();
 }
 

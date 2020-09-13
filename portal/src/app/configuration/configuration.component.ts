@@ -8,14 +8,14 @@ import { MatInput } from '@angular/material/input';
   styleUrls: ['./configuration.component.scss']
 })
 export class ConfigurationComponent implements OnInit {
-  public unitIdValue: number;
+  public unitNameValue: string;
   public networkSsidValue: string;
   public networkPwdValue: string;
   public siteDataValue: string;
 
   constructor(public espService: EspService) {
-    this.espService.unitId$.subscribe(newVal => {
-      this.unitIdValue = newVal;
+    this.espService.unitName$.subscribe(newVal => {
+      this.unitNameValue = newVal;
     });
     this.espService.ssid$.subscribe(newVal => {
       this.networkSsidValue = newVal;
@@ -31,8 +31,8 @@ export class ConfigurationComponent implements OnInit {
   ngOnInit(): void {
   }
 
-  saveUnitId(element: HTMLInputElement): void {
-    this.espService.setUnitId(parseInt(element.value));
+  saveUnitName(element: HTMLInputElement): void {
+    this.espService.setUnitName(element.value);
   }
 
   saveSsid(element: HTMLInputElement): void {

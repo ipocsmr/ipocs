@@ -42,9 +42,9 @@ int onStationModeDisconnected(const WiFiEventStationModeDisconnected& change) {
 }
 
 int onStationModeGotIP(const WiFiEventStationModeGotIP& change) {
-  char name[20];
-  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
-  MDNS.begin(name, WiFi.localIP());
+  char unitName[32];
+  Configuration::getUnitName(unitName);
+  MDNS.begin(unitName, WiFi.localIP());
   return 0;
 }
 
@@ -63,11 +63,11 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 void setup(void)
 {
   esp::LedControl::instance().begin();
-  char name[20];
-  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
+  char unitName[32];
+  Configuration::getUnitName(unitName);
   WiFi.setOutputPower(20.5);
-  WiFi.hostname(name);
-  MDNS.begin(name);
+  WiFi.hostname(unitName);
+  MDNS.begin(unitName);
   MDNS.addService("http", "tcp", 80);
   esp::Http::instance().setup();
   esp::ArduinoConnection::instance().begin();
@@ -77,15 +77,15 @@ void setup(void)
 }
 
 void setupWiFi(void) {
-  char name[20];
-  sprintf(name, "ipocs_%03d", Configuration::getUnitID());
+  char unitName[32];
+  Configuration::getUnitName(unitName);
   char password[61];
   Configuration::getPassword(password);
   char cSSID[33];
   Configuration::getSSID(cSSID);
   esp::Http::instance().log("Connecting to SSID: " + String(cSSID));
   WiFi.disconnect();
-  WiFi.hostname(name);
+  WiFi.hostname(unitName);
   WiFi.mode(WIFI_STA);
   WiFi.begin((const char*)String(cSSID).c_str(), (const char*)String(password).c_str());
 }
@@ -107,12 +107,12 @@ void loop(void)
     {
       if (connectionInitiated != 0 && (millis() - connectionInitiated) >= WIFI_CONNECT)
       {
+        char unitName[32];
+        Configuration::getUnitName(unitName);
         esp::LedControl::instance().setState(BLINK, 500);
         // WiFi failed to reconnect - go into soft AP mode
         WiFi.mode(WIFI_AP);
-        char name[20];
-        sprintf(name, "IPOCS_%03d", Configuration::getUnitID());
-        WiFi.softAP(name);
+        WiFi.softAP(unitName);
         connectionInitiated = 0;
         wifiMode = AP;
         delay(500); // Let the AP settle

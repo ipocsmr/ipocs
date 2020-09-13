@@ -70,15 +70,15 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
     if (!this->tcp->connected()) {
         if (this->serverPort != 0 && this->serverIP != IPAddress()) {
             esp::Http::instance().log("Connecting to: " + this->serverIP.toString() + ":" + String(this->serverPort));
+            char unitName[32];
+            Configuration::getUnitName(unitName);
             byte returnVal = this->tcp->connect(this->serverIP, this->serverPort);
             if (returnVal == 1) {
                 esp::LedControl::instance().setState(ON);
                 this->tcp->keepAlive(5, 1, 4);
-                char unitId[10];
-                sprintf(unitId, "%d", Configuration::getUnitID());
-                IPOCS::Message* msg = IPOCS::Message::create();
-                msg->setObject(unitId);
-                IPOCS::ConnectionRequestPacket* pkt = (IPOCS::ConnectionRequestPacket*)IPOCS::ConnectionRequestPacket::create();
+                IPOCS::Message *msg = IPOCS::Message::create();
+                msg->setObject(unitName);
+                IPOCS::ConnectionRequestPacket *pkt = (IPOCS::ConnectionRequestPacket *)IPOCS::ConnectionRequestPacket::create();
                 pkt->RM_PROTOCOL_VERSION = 0x0101;
                 char sdVersion[10];
                 sprintf(sdVersion, "%d", Configuration::getSiteDataCrc());
@@ -87,12 +87,12 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
                 this->send(msg);
                 delete msg;
 
-                IPC::Message* ipcPing = IPC::Message::create();
+                IPC::Message *ipcPing = IPC::Message::create();
                 ipcPing->RT_TYPE = IPC::CESTAB;
                 ipcPing->setPayload();
                 esp::ArduinoConnection::instance().send(ipcPing);
                 delete ipcPing;
-            } else { }
+            }
         }
     } else {
         while (this->tcp->available()) {
@@ -120,9 +120,9 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             ipcMsg->RT_TYPE = IPC::IPOCS;
             ipcMsg->setPayload(message, msg->RL_MESSAGE);
 
-            char unitId[10];
-            sprintf(unitId, "%d", Configuration::getUnitID());
-            if (strcmp(msg->getObject(), unitId) == 0) {
+            char unitName[32];
+            Configuration::getUnitName(unitName);
+            if (strcmp(msg->getObject(), unitName) == 0) {
                 if (msg->packet->RNID_PACKET == 5) {
                     IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
                     uint8_t dataLength = dataPkt->RL_PACKET - 5;

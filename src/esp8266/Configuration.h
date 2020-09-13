@@ -9,12 +9,13 @@
  *
  * Storage usage:
  *
- * Bytes - Usage
- * 0-1   - Unit ID
- * 2-35  - SSID if wifi shield is present (33 chars including null)
- * 36-97 - SSID password (61 characters including null)
- * 98-99 - Object configuration data CCIT Checksum
- * 100-  - Object configuration data
+ * Bytes    - Usage
+ * 0-1      - Unit Name Length
+ * 2-35     - SSID if wifi shield is present (33 chars including null)
+ * 36-97    - SSID password (61 characters including null)
+ * 98-99    - Object configuration data CCIT Checksum
+ * 100-     - Object configuration data
+ * 990-1020 - Unit Name
  */
 #ifndef CONFIGURATION_H
 #define CONFIGURATION_H
@@ -24,8 +25,8 @@
 
 class Configuration {
   public:
-    static uint16_t getUnitID();
-    static void setUnitID(uint16_t unitID);
+    static void getUnitName(char nodeName[]);
+    static void setUnitName(const char nodeName[]);
     static size_t getSSID(char ssid[]);
     static void setSSID(const char ssid[]);
     static size_t getPassword(char pwd[]);

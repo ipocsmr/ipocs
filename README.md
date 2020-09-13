@@ -7,7 +7,7 @@ This project implements the IPOCS specification that can be found [here](https:/
 
 #### Uno
 
-Untested, but should work.
+Fully tested.
 
 #### Mega
 

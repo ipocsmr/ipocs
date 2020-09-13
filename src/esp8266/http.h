@@ -40,7 +40,7 @@ namespace esp {
 
         String getJsonFormatted(const char* const action, String value);
         String getJsonFormatted(String action, String value);
-        String getUnitId();
+        String getUnitName();
         String getSsid();
         String getPwd();
         String getSiteData();

@@ -1,9 +1,9 @@
 <mat-list>
   <mat-list-item>
     <mat-form-field appearance="fill">
-      <mat-label>Unit ID</mat-label>
-      <input matInput placeholder="Placeholder" #unitId [value]="unitIdValue">
-      <button mat-button matSuffix (click)="saveUnitId(unitId);" [disabled]="espService.operationInProgress$ | async">Save</button>
+      <mat-label>Unit Name</mat-label>
+      <input matInput placeholder="Placeholder" #unitName [value]="unitNameValue">
+      <button mat-button matSuffix (click)="saveUnitName(unitName);" [disabled]="espService.operationInProgress$ | async">Save</button>
       <mat-hint>1-65535</mat-hint>
     </mat-form-field>
   </mat-list-item>

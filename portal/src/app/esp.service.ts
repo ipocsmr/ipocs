@@ -19,7 +19,7 @@ export class File {
   providedIn: 'root'
 })
 export class EspService {
-  public unitId$ = new BehaviorSubject<number>(0);
+  public unitName$ = new BehaviorSubject<string>("");
   public ssid$ = new BehaviorSubject<string>("");
   public pwd$ = new BehaviorSubject<string>("");
   public siteData$ = new BehaviorSubject<string>("");
@@ -82,8 +82,8 @@ export class EspService {
       console.log(data);
     }
     switch (data.action) {
-      case "valueUnitId":
-        this.unitId$.next(parseInt(data.value));
+      case "valueUnitName":
+        this.unitName$.next(data.value);
         break;
       case "valueSsid":
         this.ssid$.next(data.value);
@@ -140,10 +140,14 @@ export class EspService {
     this.webSocket.send(JSON.stringify(message));
   }
 
-  public setUnitId(unitId: number): void {
+  public setUnitName(unitName: string): void {
+    if (!unitName.trim().length) {
+      return;
+    }
+    console.log(unitName);
     let data: Message = {
-      action: "setUnitId",
-      value: unitId.toString()
+      action: "setUnitName",
+      value: unitName.trim()
     }
     this.sendMessage(data);
   }
