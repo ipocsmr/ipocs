@@ -1,6 +1,7 @@
 #include "http.h"
-#include "Configuration.h"
-#include "ArduinoConnection.h"
+#include "../communications/Configuration.h"
+#include "../communications/ArduinoConnection.h"
+#include "../communications/RestartManager.h"
 #include "../IPC/Message.h"
 #include <WString.h>
 #include <uCRC16Lib.h>
@@ -315,16 +316,7 @@ void esp::Http::handleFileUpload() {
 }
 
 void esp::Http::handleRestart(bool restartArduino) {
-  if (!restartArduino) {
-    ESP.restart();
-  } else {
-    this->log("Resetting arduino");
-    IPC::Message *message = IPC::Message::create();
-    message->RT_TYPE = IPC::RESTART;
-    message->setPayload();
-    ArduinoConnection::instance().send(message);
-    delete message;
-  }
+  handleRestart(restartArduino);
   this->server->send(200);
 }
 void esp::Http::handleNotFound() {

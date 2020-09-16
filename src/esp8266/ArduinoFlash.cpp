@@ -1,5 +1,5 @@
 #include "ArduinoFlash.h"
-#include "ArduinoConnection.h"
+#include "../communications/ArduinoConnection.h"
 #include "../IPC/Message.h"
 #include "http.h"
 #include "stk.h"

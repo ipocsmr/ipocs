@@ -3,7 +3,6 @@
 #include "PointsMotorStore.h"
 #include "PointsMotor_Servo.h"
 #include "../../../IPOCS/Packets/ThrowPointsPacket.h"
-#include "../../log.h"
 #include "../../EspConnection.h"
 
 #define NO_POSITION_INPUT 0
