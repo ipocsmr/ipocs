@@ -1,10 +1,10 @@
 #include "http.h"
-#include "Configuration.h"
-#include "ServerConnection.h"
+#include "../communications/Configuration.h"
+#include "../communications/ServerConnection.h"
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
-#include "ArduinoConnection.h"
 #include "../LedControl.h"
+#include "../communications/ArduinoConnection.h"
 #include "ArduinoFlash.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>

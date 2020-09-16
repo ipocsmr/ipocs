@@ -11,11 +11,10 @@
   by P Elestedt
 
 */
-#include "EspConnection.h"
-#include "ObjectStore.h"
+#include "../controller/EspConnection.h"
+#include "../controller/ObjectStore.h"
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
-#include "log.h"
 #include "../LedControl.h"
 #include <avr/wdt.h>
 

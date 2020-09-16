@@ -6,6 +6,7 @@
 #include "../IPC/Message.h"
 #include "../LedControl.h"
 #include "http.h"
+#include "RestartManager.h"
 #include "ArduinoConnection.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -69,7 +70,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
     }
     if (!this->tcp->connected()) {
         if (this->serverPort != 0 && this->serverIP != IPAddress()) {
-            esp::Http::instance().log("Connecting to: " + this->serverIP.toString() + ":" + String(this->serverPort));
+            //esp::Http::instance().log("Connecting to: " + this->serverIP.toString() + ":" + String(this->serverPort));
             char unitName[32];
             Configuration::getUnitName(unitName);
             byte returnVal = this->tcp->connect(this->serverIP, this->serverPort);
@@ -127,7 +128,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
                     IPOCS::ApplicationDataPacket* dataPkt = (IPOCS::ApplicationDataPacket* const)msg->packet;
                     uint8_t dataLength = dataPkt->RL_PACKET - 5;
                     Configuration::setSD(dataPkt->data, dataLength);
-                    esp::Http::instance().handleRestart(true);
+                    handleRestart(true);
                 }
             } else {
                 ArduinoConnection::instance().send(ipcMsg);
@@ -140,7 +141,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
 
 void esp::ServerConnection::send(IPOCS::Message* msg) {
     if (!this->tcp->connected()) {
-        esp::Http::instance().log("Not connected, throwing message");
+        //esp::Http::instance().log("Not connected, throwing message");
         return;
     }
     uint8_t buffer[255];

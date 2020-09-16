@@ -2,7 +2,6 @@
 
 #include "PointsMotorStore.h"
 #include "PointsMotor_Pulse.h"
-#include "../../log.h"
 #include "../../EspConnection.h"
 
 const uint8_t NO_POSITION_INPUT = 0;

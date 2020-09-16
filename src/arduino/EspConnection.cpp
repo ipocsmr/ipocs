@@ -2,12 +2,11 @@
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <util/delay.h>
-#include "EspConnection.h"
-#include "ObjectStore.h"
+#include "../controller/EspConnection.h"
+#include "../controller/ObjectStore.h"
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 #include "../IPOCS/Packets/ConnectionRequestPacket.h"
-#include "log.h"
 #include <avr/wdt.h>
 #include <uCRC16Lib.h>
 
