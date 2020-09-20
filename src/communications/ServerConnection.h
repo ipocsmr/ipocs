@@ -1,9 +1,10 @@
 #ifndef ESP8266_SERVERCONNECTION_H
 #define ESP8266_SERVERCONNECTION_H
 
-#include <ESP8266WiFi.h>
+#include <stdint.h>
 
 class WiFiClient;
+class IPAddress;
 namespace IPOCS {
     class Message;
 };
@@ -21,7 +22,7 @@ namespace esp {
             ServerConnection();
             virtual ~ServerConnection();
             WiFiClient* tcp;
-            IPAddress serverIP;
+            IPAddress* serverIP;
             uint16_t serverPort;
     };
 };

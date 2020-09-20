@@ -1,13 +1,13 @@
-#include "ServerConnection.h"
-#include "Configuration.h"
+#include "../communications/ServerConnection.h"
+#include "../communications/Configuration.h"
 #include "../IPOCS/Message.h"
 #include "../IPOCS/Packets/ConnectionRequestPacket.h"
 #include "../IPOCS/Packets/ApplicationDataPacket.h"
 #include "../IPC/Message.h"
 #include "../LedControl.h"
 #include "http.h"
-#include "RestartManager.h"
-#include "ArduinoConnection.h"
+#include "../communications/RestartManager.h"
+#include "../communications/ArduinoConnection.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
@@ -33,6 +33,7 @@ void MDNSServiceQueryCallback(MDNSResponder::MDNSServiceInfo serviceInfo, MDNSRe
 
 esp::ServerConnection::ServerConnection() {
     this->tcp = new WiFiClient();
+    this->serverIP = new IPAddress();
 }
 
 esp::ServerConnection::~ServerConnection() {
@@ -54,7 +55,7 @@ void esp::ServerConnection::disconnect() {
 }
 
 void esp::ServerConnection::setServer(IPAddress &ip, uint16_t port) {
-    this->serverIP = ip;
+    *(this->serverIP) = ip;
     this->serverPort = port;
 }
 
@@ -69,11 +70,11 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
         hMDNSServiceQuery = MDNS.installServiceQuery("ipocs", "tcp", MDNSServiceQueryCallback);
     }
     if (!this->tcp->connected()) {
-        if (this->serverPort != 0 && this->serverIP != IPAddress()) {
+        if (this->serverPort != 0 && *(this->serverIP) != IPAddress()) {
             //esp::Http::instance().log("Connecting to: " + this->serverIP.toString() + ":" + String(this->serverPort));
             char unitName[32];
             Configuration::getUnitName(unitName);
-            byte returnVal = this->tcp->connect(this->serverIP, this->serverPort);
+            byte returnVal = this->tcp->connect(*(this->serverIP), this->serverPort);
             if (returnVal == 1) {
                 LedControl::instance().setState(ON);
                 this->tcp->keepAlive(5, 1, 4);

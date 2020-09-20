@@ -32,7 +32,7 @@ class Configuration {
     static size_t getPassword(char pwd[]);
     static void setPassword(const char pwd[]);
     static uint8_t getSD(uint8_t data[], int dataLength);
-    static void setSD(uint8_t data[], int dataLength);
+    static void setSD(const uint8_t data[], int dataLength);
 
     static uint16_t getSiteDataCrc();
     static bool verifyCrc();

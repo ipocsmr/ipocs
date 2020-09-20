@@ -1,6 +1,7 @@
 import { Component, OnInit, ElementRef, Input } from '@angular/core';
 import { EspService } from '../esp.service';
 import { MatInput } from '@angular/material/input';
+import { Mode } from '../mode.enum';
 
 @Component({
   selector: 'app-configuration',
@@ -12,6 +13,7 @@ export class ConfigurationComponent implements OnInit {
   public networkSsidValue: string;
   public networkPwdValue: string;
   public siteDataValue: string;
+  public isESP8266:boolean = true;
 
   constructor(public espService: EspService) {
     this.espService.unitName$.subscribe(newVal => {
@@ -25,6 +27,9 @@ export class ConfigurationComponent implements OnInit {
     });
     this.espService.siteData$.subscribe(newVal => {
       this.siteDataValue = newVal;
+    });
+    this.espService.mode$.subscribe(value => {
+      this.isESP8266 = value == Mode.esp8266;
     });
   }
 

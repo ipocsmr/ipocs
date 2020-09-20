@@ -3,6 +3,7 @@
 #include "EspConnection.h"
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
+#include <Arduino.h>
 
 void BasicObject::init(const char objectName[], const uint8_t* configData, int configDataLen)
 {

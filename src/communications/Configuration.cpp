@@ -1,14 +1,17 @@
 #include "Configuration.h"
 
 #include <EEPROM.h>
-#include <ESP8266WiFi.h>
 #include <uCRC16Lib.h>
 
 void Configuration::getUnitName(char unitName[])
 {
   uint16_t value = (EEPROM.read(0) << 8) + EEPROM.read(1);
   if (value > 30) {
+    #ifdef ESP8266
     sprintf(unitName, "ipocs_%06x", ESP.getChipId());
+    #else
+    sprintf(unitName, "ipocs_%06x", (uint32_t)ESP.getEfuseMac());
+    #endif
     return;
   }
   size_t i;
@@ -20,7 +23,11 @@ void Configuration::getUnitName(char unitName[])
   }
   unitName[value] = 0x00;
   if (i+1 != value || unitName[i] != 0x00) {
+    #ifdef ESP8266
     sprintf(unitName, "ipocs_%06x", ESP.getChipId());
+    #else
+    sprintf(unitName, "ipocs_%06x", (uint32_t)ESP.getEfuseMac());
+    #endif
   }
 }
 
@@ -92,7 +99,7 @@ uint8_t Configuration::getSD(uint8_t data[], int dataLength)
   return storedLength;
 }
 
-void Configuration::setSD(uint8_t data[], int dataLength)
+void Configuration::setSD(const uint8_t data[], int dataLength)
 {
   EEPROM.write(100, dataLength);
   for (int i = 0; i < dataLength; i++)
@@ -118,9 +125,4 @@ bool Configuration::verifyCrc()
   uint8_t sdLength = Configuration::getSD(data, 0x100);
   uint16_t calculatedCrc = uCRC16Lib::calculate(data, sdLength);
   return (sdLength != 0 && calculatedCrc == storedCrc);
-}
-
-__attribute__((constructor))
-static void initialize_configuration() {
-  EEPROM.begin(1024);
 }

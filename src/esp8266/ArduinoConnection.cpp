@@ -5,6 +5,8 @@
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 
+#include <PacketSerial.h>
+
 void onPacketReceived(const uint8_t* buffer, size_t size);
 
 esp::ArduinoConnection& esp::ArduinoConnection::instance() {
@@ -22,22 +24,25 @@ void esp::ArduinoConnection::begin() {
       {
         Serial.read();
       }
-      this->packetSerial = new SLIPPacketSerial();
-      this->packetSerial->setStream(&Serial);
-      this->packetSerial->setPacketHandler(&onPacketReceived);
+      SLIPPacketSerial* packetSerial = new SLIPPacketSerial();
+
+      //this->packetSerial = new SLIPPacketSerial();
+      packetSerial->setStream(&Serial);
+      packetSerial->setPacketHandler(&onPacketReceived);
+      this->packetSerial = packetSerial;
     }
 }
 
 void esp::ArduinoConnection::stop() {
   if (this->packetSerial != nullptr) {
-    delete this->packetSerial;
+    delete ((SLIPPacketSerial*)this->packetSerial);
     this->packetSerial = nullptr;
   }
 }
 
 void esp::ArduinoConnection::loop() {
   if (this->packetSerial != nullptr) {
-    this->packetSerial->update();
+    ((SLIPPacketSerial*)this->packetSerial)->update();
   }
 }
 
@@ -99,7 +104,7 @@ void onPacketReceived(const uint8_t* buffer, size_t size)
 
 void esp::ArduinoConnection::send(const uint8_t* const msg, const size_t length) {
   if (this->packetSerial != nullptr) {
-    this->packetSerial->send(msg, length);
+    ((SLIPPacketSerial*)this->packetSerial)->send(msg, length);
   }
 }
 
@@ -111,6 +116,6 @@ void esp::ArduinoConnection::send(IPC::Message* msg) {
     uint8_t buffer[msg->RL_MESSAGE + 2];
     size_t msgSize = msg->serialize(buffer);
     if (this->packetSerial != nullptr) {
-      this->packetSerial->send(buffer, msgSize);
+      ((SLIPPacketSerial*)this->packetSerial)->send(buffer, msgSize);
     }
 }
