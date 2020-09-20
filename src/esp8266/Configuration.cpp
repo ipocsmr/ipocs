@@ -8,6 +8,7 @@ void Configuration::getUnitName(char unitName[])
 {
   uint16_t value = (EEPROM.read(0) << 8) + EEPROM.read(1);
   if (value > 30) {
+    sprintf(unitName, "ipocs_%06x", ESP.getChipId());
     return;
   }
   size_t i;
@@ -20,19 +21,18 @@ void Configuration::getUnitName(char unitName[])
   unitName[value] = 0x00;
   if (i != value || unitName[i] != 0x00) {
     sprintf(unitName, "ipocs_%06x", ESP.getChipId());
-    i = strlen(unitName);
   }
 }
 
 void Configuration::setUnitName(const char unitName[])
 {
-  uint8_t unitID = strlen(unitName);
+  uint8_t unitID = strlen(unitName) + 1;
   EEPROM.write(0, unitID >> 8);
   EEPROM.write(1, unitID & 0xFF);
   for (int i = 0; i < unitID; i++) {
     EEPROM.write(990 + i, unitName[i]);
   }
-  EEPROM.write(990 + unitID + 1, 0x00);
+  EEPROM.write(990 + unitID, 0x00);
   EEPROM.commit();
 }
 
