@@ -5,11 +5,11 @@
 #include "../IPC/Message.h"
 #include <WString.h>
 #include <uCRC16Lib.h>
-#include "ArduinoFlash.h"
-#include <LittleFS.h>
+#include <SPIFFS.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
 #include "../LedControl.h"
+#include <Update.h>
 
 using namespace std::placeholders;
 
@@ -35,7 +35,6 @@ esp::Http& esp::Http::instance() {
   return __instance;
 }
 
-
 String getContentType(String filename) { // convert the file extension to the MIME type
   if (filename.endsWith(".html")) return "text/html";
   else if (filename.endsWith(".css")) return "text/css";
@@ -44,36 +43,57 @@ String getContentType(String filename) { // convert the file extension to the MI
   return "text/plain";
 }
 
-bool handleFileRead(ESP8266WebServer* server, String path) { // send the right file to the client (if it exists)
-  LittleFS.begin();
+bool handleFileRead(WebServer* server, String path) { // send the right file to the client (if it exists)
+  SPIFFS.begin();
   if (path.endsWith("/")) path += "index.html";         // If a folder is requested, send the index file
   if (path.indexOf('.') == -1) {
     path = "/index.html";
   }
   String contentType = getContentType(path);            // Get the MIME type
-  bool exists = LittleFS.exists(path);
+  bool exists = SPIFFS.exists(path);
   if (!exists) {
     path += ".gz";
-    exists = LittleFS.exists(path);
+    exists = SPIFFS.exists(path);
   }
   if (exists) {                            // If the file exists
-    File file = LittleFS.open(path, "r");                 // Open it
+    File file = SPIFFS.open(path, "r");                 // Open it
     server->streamFile(file, contentType); // And send it to the client
     file.close();                                       // Then close the file again
   }
   return exists;
-  LittleFS.end();
+  SPIFFS.end();
 }
 
 esp::Http::Http() {
     this->arduinoVersion = new char[1] { 0 };
-    this->server = new ESP8266WebServer();
-    
+    this->server = new WebServer();
     this->server->on("/reason", [this]() { this->handleReason(); });
     this->server->on("/api/fileUpload", HTTP_POST, [this]() { this->server->send(200); },  [this]() { this->handleFileUpload(); });
+    this->server->on("/update", HTTP_POST, [this]() {
+      server->sendHeader("Connection", "close");
+      server->send(200, "text/plain", (Update.hasError()) ? "FAIL" : "OK");
+      ESP.restart();
+    }, [this]() {
+      HTTPUpload& upload = this->server->upload();
+      if (upload.status == UPLOAD_FILE_START) {
+        Serial.printf("Update: %s\n", upload.filename.c_str());
+        if (!Update.begin(UPDATE_SIZE_UNKNOWN)) { //start with max available size
+          Update.printError(Serial);
+        }
+      } else if (upload.status == UPLOAD_FILE_WRITE) {
+        /* flashing firmware to ESP*/
+        if (Update.write(upload.buf, upload.currentSize) != upload.currentSize) {
+          Update.printError(Serial);
+        }
+      } else if (upload.status == UPLOAD_FILE_END) {
+        if (Update.end(true)) { //true to set the size to the current progress
+          Serial.printf("Update Success: %u\nRebooting...\n", upload.totalSize);
+        } else {
+          Update.printError(Serial);
+        }
+      }
+    });
     this->server->onNotFound([this]() { this->handleNotFound(); });
-    this->updateServer = new ESP8266HTTPUpdateServer(80);
-    this->updateServer->setup(this->server);
     this->webSocket = new WebSocketsServer(81);
     this->webSocket->begin();
     this->webSocket->onEvent(std::bind(&Http::webSocketEvent, this, _1, _2, _3, _4));
@@ -105,6 +125,7 @@ void esp::Http::broadcastMessage(const char* action, const char* value) {
 void esp::Http::log(const String& string) {
   String ss = this->getJsonFormatted(String("log"), string);
   this->webSocket->broadcastTXT(ss);
+  Serial.printf("%s:%i %s\n", __FILE__, __LINE__, string.c_str());
 }
 
 String esp::Http::getJsonFormatted(String action, String value) {
@@ -152,21 +173,21 @@ String esp::Http::getFiles() {
   DynamicJsonDocument doc(1024);
   JsonArray array = doc.to<JsonArray>();
 
-  LittleFS.begin();
-  LittleFS.mkdir("/hex");
-  Dir dir = LittleFS.openDir("/hex");
-  while (dir.next()) {
-    File f = dir.openFile("r");
+  SPIFFS.begin();
+  SPIFFS.mkdir("/hex");
+  File dir = SPIFFS.open("/hex");
+  while (File f = dir.openNextFile()) {
+    //File f = dir.open("r");
     if (f) {
     JsonObject nested = array.createNestedObject();
-    nested["name"] = String(f.fullName());
+    nested["name"] = String(f.name());
     nested["size"] = f.size();
     f.close();
     }
   }
   String output;
   serializeJson(array, output);
-  LittleFS.end();
+  SPIFFS.end();
   return this->getJsonFormatted(String("valueFiles"), output);
 }
 
@@ -188,7 +209,7 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     this->webSocket->sendTXT(num, aVersion);
     String eVersion = this->getJsonFormatted(String("versionEsp"), String(VERSION_STRING));
     this->webSocket->sendTXT(num, eVersion);
-    String isBusy = this->getJsonFormatted(String("opInProgress"), String(esp::ArduinoFlash::instance().isBusy() ? "true" : "false"));
+    String isBusy = "false"; //this->getJsonFormatted(String("opInProgress"), String(esp::ArduinoFlash::instance().isBusy() ? "true" : "false"));
     this->webSocket->sendTXT(num, isBusy);
   }
   if (type == WStype_TEXT){
@@ -231,13 +252,13 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     }
     if (doc["action"] == "deleteFile") {
       String fileName((const char*)doc["value"]);
-      LittleFS.begin();
-      LittleFS.remove(fileName);
-      LittleFS.end();
+      SPIFFS.begin();
+      SPIFFS.remove(fileName);
+      SPIFFS.end();
       String txtFiles = this->getFiles();
       this->webSocket->broadcastTXT(txtFiles);
     }
-    if (doc["action"] == "verifyFile") {
+    /*if (doc["action"] == "verifyFile") {
       String fileName((const char*)doc["value"]);
       String verBeg = this->getJsonFormatted(String("verifyBegin"), String(""));
       this->webSocket->sendTXT(num, verBeg);
@@ -255,7 +276,7 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
     if (doc["action"] == "programFlash") {
       String fileName((const char*)doc["value"]);
       esp::ArduinoFlash::instance().initiate(fileName, false);
-    }
+    }*/
     if (doc["action"] == "restartArduino") {
       this->handleRestart(true);
     }
@@ -263,21 +284,27 @@ void esp::Http::webSocketEvent(uint8_t num, WStype_t type, uint8_t * payload, si
       this->handleRestart(false);
     }
     if (doc["action"] == "resetEsp") {
-      wifi_station_disconnect();
-      ESP.eraseConfig();
+      WiFi.disconnect();
+      Configuration::setUnitName("");
+      Configuration::setSSID("");
+      Configuration::setPassword("");
+      Configuration::setSD((const uint8_t* const)"", 0);
       this->handleRestart(false);
     }
     if (doc["action"] == "applyWiFi") {
-      wifi_station_disconnect();
+      WiFi.disconnect();
+      //wifi_station_disconnect();
     }
   }
 }
 
 void esp::Http::handleReason() {
+  /*
   rst_info *myResetInfo;
   myResetInfo = ESP.getResetInfoPtr();
   String html = "<html><body>" + String(myResetInfo->reason) + ", " + String(myResetInfo->exccause) + "</body></body>";
   this->server->send(200, "text/html", html);
+  */
 }
 
 static File fsUploadFile;
@@ -285,13 +312,13 @@ static File fsUploadFile;
 void esp::Http::handleFileUpload() {
   HTTPUpload& upload = this->server->upload();
   if(upload.status == UPLOAD_FILE_START){
-    LittleFS.begin();
+    SPIFFS.begin();
     String filename = String(upload.filename);
     if(!filename.startsWith("/")) filename = "/" + filename;
-    LittleFS.mkdir("/hex");
+    SPIFFS.mkdir("/hex");
     filename = "/hex" + filename;
     this->log("Starting file upload " + filename);
-    fsUploadFile = LittleFS.open(filename, "w+");
+    fsUploadFile = SPIFFS.open(filename, "w+");
     if (!!!fsUploadFile)
     {
       this->log("Failed to create file");
@@ -308,7 +335,7 @@ void esp::Http::handleFileUpload() {
       fsUploadFile.write(upload.buf, upload.currentSize);
       fsUploadFile.close();
       this->server->send(200);
-      LittleFS.end();
+      SPIFFS.end();
       String txtFiles = this->getFiles();
       this->webSocket->broadcastTXT(txtFiles);
     } else {

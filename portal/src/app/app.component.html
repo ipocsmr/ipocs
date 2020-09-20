@@ -19,7 +19,7 @@
           <span class="label">Configuration</span>
         </a>
       </li>
-      <li>
+      <li *ngIf="(mode$ | async) == Mode.esp8266">
         <a routerLink="/flash-arduino">
           <span class="label">Flash Arduino</span>
         </a>

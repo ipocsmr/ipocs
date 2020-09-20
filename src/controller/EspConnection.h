@@ -10,7 +10,7 @@
 #define ESP_CONNECTION_H
 
 #include <stdint.h>
-#include <PacketSerial.h>
+#include <Arduino.h>
 
 namespace IPC {
   class Message;
@@ -31,7 +31,6 @@ namespace ard {
       bool bHasSentStarted = false;
     private:
       EspConnection() {}
-      SLIPPacketSerial* packetSerial = nullptr;
   };
 };
 

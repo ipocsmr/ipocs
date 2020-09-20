@@ -12,8 +12,9 @@
 #define POINTSMOTOR_SERVO_H
 
 #include "PointsMotor.h"
-#include <Servo.h>
 #include "../../../IPOCS/Packets/PointsStatusPacket.h"
+
+class Servo;
 
 class PointsMotor_Servo: public PointsMotor {
   public:
@@ -24,7 +25,7 @@ class PointsMotor_Servo: public PointsMotor {
     virtual IPOCS::PointsStatusPacket::E_RQ_POINTS_STATE getState();
   private:
     bool invertStatus;
-    Servo object;
+    Servo* object;
     uint8_t posInput;
 
     int setPos;

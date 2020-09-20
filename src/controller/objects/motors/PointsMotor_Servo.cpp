@@ -4,6 +4,8 @@
 #include "PointsMotor_Servo.h"
 #include "../../../IPOCS/Packets/ThrowPointsPacket.h"
 #include "../../EspConnection.h"
+#include <Servo.h>
+#include <Arduino.h>
 
 #define NO_POSITION_INPUT 0
 const int servoRightVal = 20;
@@ -16,6 +18,7 @@ const int StateRight = 799;
 
 PointsMotor_Servo::PointsMotor_Servo()
 {
+  this->object = new Servo();
 }
 
 int PointsMotor_Servo::objectInit(const uint8_t configData[])
@@ -25,16 +28,30 @@ int PointsMotor_Servo::objectInit(const uint8_t configData[])
   this->setPos = servoRightVal;
   this->curPos = servoRightVal;
 
-  this->object.attach(configData[0] + 1);
+  this->object->attach(configData[0] + 1);
   switch (configData[1]) {
     case 1: this->posInput = A0; break;
+#ifdef PIN_A1
     case 2: this->posInput = A1; break;
+#endif
+#ifdef PIN_A2
     case 3: this->posInput = A2; break;
+#endif
+#ifdef PIN_A3
     case 4: this->posInput = A3; break;
+#endif
+#ifdef PIN_A4
     case 5: this->posInput = A4; break;
+#endif
+#ifdef PIN_A5
     case 6: this->posInput = A5; break;
+#endif
+#ifdef PIN_A6
     case 7: this->posInput = A6; break;
+#endif
+#ifdef PIN_A7
     case 8: this->posInput = A7; break;
+#endif
 #ifdef PIN_A8
     case 9: this->posInput = A8; break;
 #endif
@@ -98,7 +115,7 @@ void PointsMotor_Servo::loop()
     int direction = this->setPos > this->curPos ? +1 : -1;
     // And then move
     this->curPos += direction;
-    this->object.write(this->curPos);
+    this->object->write(this->curPos);
     // And possibly notify on reaching end position (obsolete if we have an input to look at)
   }
 }

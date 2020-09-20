@@ -22,13 +22,27 @@ int PointsMotor_Pulse::objectInit(const uint8_t configData[])
   this->throwRightOutput = configData[1] + 1;
   switch (configData[2]) {
     case 1: this->posInput = A0; break;
+#ifdef PIN_A1
     case 2: this->posInput = A1; break;
+#endif
+#ifdef PIN_A2
     case 3: this->posInput = A2; break;
+#endif
+#ifdef PIN_A3
     case 4: this->posInput = A3; break;
+#endif
+#ifdef PIN_A4
     case 5: this->posInput = A4; break;
+#endif
+#ifdef PIN_A5
     case 6: this->posInput = A5; break;
+#endif
+#ifdef PIN_A6
     case 7: this->posInput = A6; break;
+#endif
+#ifdef PIN_A7
     case 8: this->posInput = A7; break;
+#endif
 #ifdef PIN_A8
     case 9: this->posInput = A8; break;
 #endif

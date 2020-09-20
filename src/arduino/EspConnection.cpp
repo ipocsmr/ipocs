@@ -9,6 +9,9 @@
 #include "../IPOCS/Packets/ConnectionRequestPacket.h"
 #include <avr/wdt.h>
 #include <uCRC16Lib.h>
+#include <PacketSerial.h>
+
+static SLIPPacketSerial* packetSerial = nullptr;
 
 #define STRINGIFY(x) #x
 #define TOSTRING(x) STRINGIFY(x)
@@ -24,22 +27,22 @@ ard::EspConnection& ard::EspConnection::instance() {
 }
 
 void ard::EspConnection::begin() {
-    if (this->packetSerial != nullptr) {
-      delete this->packetSerial;
+    if (packetSerial != nullptr) {
+      delete packetSerial;
     }
     Serial.begin(115200);
     while (Serial.available())
     {
       Serial.read();
     }
-    this->packetSerial = new SLIPPacketSerial();
-    this->packetSerial->setStream(&Serial);
-    this->packetSerial->setPacketHandler(&onPacketReceived);
+    packetSerial = new SLIPPacketSerial();
+    packetSerial->setStream(&Serial);
+    packetSerial->setPacketHandler(&onPacketReceived);
 }
 
 void ard::EspConnection::loop() {
-  if (this->packetSerial != nullptr) {
-    this->packetSerial->update();
+  if (packetSerial != nullptr) {
+    packetSerial->update();
   }
 }
 
@@ -142,5 +145,5 @@ void ard::EspConnection::log(String& str) {
 void ard::EspConnection::send(IPC::Message* msg, bool print) {
     uint8_t buffer[msg->RL_MESSAGE + 10];
     size_t msgSize = msg->serialize(buffer);
-    this->packetSerial->send(buffer, msgSize);
+    packetSerial->send(buffer, msgSize);
 }

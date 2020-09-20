@@ -1,14 +1,15 @@
-import { Component, ViewContainerRef, ViewChildren, QueryList, ComponentRef } from '@angular/core';
+import { Component, ComponentRef } from '@angular/core';
 import { Overlay, OverlayConfig } from '@angular/cdk/overlay';
 import { EspService } from './esp.service';
 import { Router, NavigationEnd, ActivatedRoute } from '@angular/router';
 import { Title } from '@angular/platform-browser';
 import { filter, map } from 'rxjs/operators';
 import { Version } from '../version'
-import { TemplatePortalDirective, Portal, ComponentPortal } from '@angular/cdk/portal';
-import { FlashEspComponent } from './flash-esp/flash-esp.component';
+import { ComponentPortal } from '@angular/cdk/portal';
 import { SpinnerComponent } from './spinner/spinner.component';
 import { ProgressComponent } from './progress/progress.component';
+import { Observable } from 'rxjs';
+import { Mode } from './mode.enum';
 
 @Component({
   selector: 'app-root',
@@ -24,15 +25,18 @@ export class AppComponent {
     positionStrategy: this.overlay.position().global().centerHorizontally().centerVertically()
   }));
   private portalRef: ComponentRef<ProgressComponent> = undefined;
+  public Mode = Mode;
 
   private overlayRef = this.overlay.create(new OverlayConfig({
     hasBackdrop: false,
     width: '80%',
     positionStrategy: this.overlay.position().global().centerHorizontally().bottom("80px")
   }));
+  public mode$: Observable<Mode>;
 
   constructor(private router: Router, private activatedRoute: ActivatedRoute, private titleService: Title,
               private overlay: Overlay, private espService: EspService) {
+    this.mode$ = espService.mode$.asObservable();
   }
 
   ngOnInit() {
@@ -68,7 +72,6 @@ export class AppComponent {
         this.portalRef.instance.message$.next("Operation started...");
       }
       if (this.portalRef !== undefined && !inProgress) {
-        //this.portalRef.instance.message = "Done";
         setTimeout(() => {
           this.overlayRef.detach();
           this.portalRef = undefined;

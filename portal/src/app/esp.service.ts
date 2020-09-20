@@ -1,9 +1,8 @@
 import { Injectable } from '@angular/core';
-import { connectableObservableDescriptor } from 'rxjs/internal/observable/ConnectableObservable';
 import { BehaviorSubject } from 'rxjs';
-import { ArrayType } from '@angular/compiler';
 import { environment } from 'src/environments/environment';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { Mode } from './mode.enum';
 
 export class Message {
   value: string;
@@ -32,6 +31,7 @@ export class EspService {
   public operationInProgress$ = new BehaviorSubject<boolean>(false);
   public progress$ = new BehaviorSubject<number>(0);
   public progressMessage$ = new BehaviorSubject<string>(undefined);
+  public mode$ = new BehaviorSubject<Mode>(Mode.esp8266);
 
   private webSocket: WebSocket;
   private connectTimer: number;
@@ -44,16 +44,17 @@ export class EspService {
   private connect(): void {
     let hostName = window.location.hostname;
     if (!environment.production) {
-      hostName = "172.16.0.218";
+      hostName = localStorage.getItem("serverip");
     }
-    this.webSocket = new WebSocket("ws://" + hostName + ":81");
-    this.webSocket.onopen = (event) => this.onOpen(event);
-    this.webSocket.onclose = (event) => this.onClose(event);
-    this.webSocket.onmessage = (message) => this.onMessage(message);
+    if (hostName) {
+      this.webSocket = new WebSocket("ws://" + hostName + ":81");
+      this.webSocket.onopen = (event) => this.onOpen(event);
+      this.webSocket.onclose = (event) => this.onClose(event);
+      this.webSocket.onmessage = (message) => this.onMessage(message);
+    }
   }
 
   private onOpen(event: Event): void {
-    console.log(event);
     clearTimeout(this.connectTimer);
     this.pinger = setInterval(() => {
       if (!this.connected$.value) {
@@ -67,7 +68,6 @@ export class EspService {
   }
 
   private onClose(event: Event): void {
-    console.log(event);
     this.connected$.next(false);
     clearTimeout(this.connectTimer);
     clearInterval(this.pinger);
@@ -78,10 +78,10 @@ export class EspService {
 
   private onMessage(message: MessageEvent) {
     let data: Message = JSON.parse(message.data);
-    if (data.action != "log") {
-      console.log(data);
-    }
     switch (data.action) {
+      case "mode": 
+        this.mode$.next(Mode[data.value]);
+        break;
       case "valueUnitName":
         this.unitName$.next(data.value);
         break;
@@ -136,6 +136,7 @@ export class EspService {
         break;
     }
   }
+
   private sendMessage(message: Message) {
     this.webSocket.send(JSON.stringify(message));
   }
@@ -144,7 +145,6 @@ export class EspService {
     if (!unitName.trim().length) {
       return;
     }
-    console.log(unitName);
     let data: Message = {
       action: "setUnitName",
       value: unitName.trim()

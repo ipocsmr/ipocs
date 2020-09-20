@@ -1,7 +1,8 @@
 #ifndef ARDUINOCONNECTION_H
 #define ARDUINOCONNECTION_H
 
-#include <PacketSerial.h>
+#include <stdint.h>
+#include <stddef.h>
 
 namespace IPC {
     class Message;
@@ -20,7 +21,9 @@ namespace esp {
             void loop();
         private:
             ArduinoConnection() {}
-            SLIPPacketSerial* packetSerial;
+            // Void pointer because the PacketSerial header
+            // is not easy to do forward declarations for.
+            void* packetSerial;
     };
 };
 
