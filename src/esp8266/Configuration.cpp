@@ -40,7 +40,11 @@ size_t Configuration::getSSID(char ssid[]) {
   for (uint16_t i = 0; i < 33; i++) {
     ssid[i] = EEPROM.read(i + 2);
   }
-  ssid[32] = 0; // Force null termination for uninitialized cards
+  // Force null termination for uninitialized cards
+  if (ssid[0] == 0xFF) {
+    ssid[0] = 0x00;
+  }
+  ssid[32] = 0x00; // Force null termination just in case
   return strlen(ssid);
 }
 
@@ -58,7 +62,11 @@ size_t Configuration::getPassword(char pwd[])
   for (uint16_t i = 0; i < 61; i++) {
     pwd[i] = EEPROM.read(i + 36);
   }
-  pwd[61] = 0; // Force null termination for uninitialized cards
+  // Force null termination for uninitialized cards
+  if (pwd[0] == 0xFF) {
+    pwd[0] = 0x00;
+  }
+  pwd[61] = 0x00; // Force null termination just in case
   return strlen(pwd);
 }
 
@@ -81,7 +89,6 @@ uint8_t Configuration::getSD(uint8_t data[], int dataLength)
   {
     data[i] = EEPROM.read(101 + i);
   }
-
   return storedLength;
 }
 
