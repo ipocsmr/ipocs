@@ -19,7 +19,7 @@ void Configuration::getUnitName(char unitName[])
     }
   }
   unitName[value] = 0x00;
-  if (i != value || unitName[i] != 0x00) {
+  if (i+1 != value || unitName[i] != 0x00) {
     sprintf(unitName, "ipocs_%06x", ESP.getChipId());
   }
 }
