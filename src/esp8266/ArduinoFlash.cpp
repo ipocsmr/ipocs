@@ -168,7 +168,7 @@ void esp::ArduinoFlash::loop() {
         esp::Http::instance().log("Read unexpected char: 0x" + this->hexParser->padString(String(Serial.read(), 16)));
       }
       uint16_t addr = this->hexParser->address >> 1; // word address
-      uint8_t sendBuffer[4] = { STK_LOAD_ADDRESS, addr & 0xFF, (addr >> 8) & 0xFF, CRC_EOP };
+      uint8_t sendBuffer[4] = { STK_LOAD_ADDRESS, (uint8_t)(addr & 0xFF), (uint8_t)((addr >> 8) & 0xFF), CRC_EOP };
       Serial.write(sendBuffer, 4);
       progress = stateLoadAddressAck;
       this->nextCommand = 10U;
