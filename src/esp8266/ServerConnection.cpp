@@ -4,9 +4,9 @@
 #include "../IPOCS/Packets/ConnectionRequestPacket.h"
 #include "../IPOCS/Packets/ApplicationDataPacket.h"
 #include "../IPC/Message.h"
+#include "../LedControl.h"
 #include "http.h"
 #include "ArduinoConnection.h"
-#include "LedControl.hpp"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <WiFiUdp.h>
@@ -74,7 +74,7 @@ void esp::ServerConnection::loop(bool isWiFiConnected) {
             Configuration::getUnitName(unitName);
             byte returnVal = this->tcp->connect(this->serverIP, this->serverPort);
             if (returnVal == 1) {
-                esp::LedControl::instance().setState(ON);
+                LedControl::instance().setState(ON);
                 this->tcp->keepAlive(5, 1, 4);
                 IPOCS::Message *msg = IPOCS::Message::create();
                 msg->setObject(unitName);

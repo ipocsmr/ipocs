@@ -8,7 +8,7 @@
 #include <LittleFS.h>
 #include <ArduinoOTA.h>
 #include <ArduinoJson.h>
-#include "LedControl.hpp"
+#include "../LedControl.h"
 
 using namespace std::placeholders;
 

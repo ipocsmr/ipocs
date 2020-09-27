@@ -1,14 +1,14 @@
-#include "LedControl.hpp"
+#include "../LedControl.h"
 #include <Arduino.h>
 
 #define LED_PIN 14
 
-esp::LedControl& esp::LedControl::instance() {
-    static esp::LedControl ctrl;
+LedControl& LedControl::instance() {
+    static LedControl ctrl;
     return ctrl;
 }
 
-void esp::LedControl::begin() {
+void LedControl::begin() {
     this->m_controlState = OFF;
     this->m_ledState = ON;
     this->m_ulLastLoop = millis();
@@ -17,7 +17,7 @@ void esp::LedControl::begin() {
     digitalWrite(LED_PIN, HIGH);
 }
 
-void esp::LedControl::loop() {
+void LedControl::loop() {
   unsigned long ulCurrentTime = millis();
   if (ulCurrentTime - this->m_ulLastLoop >= this->m_ulKeepStateFor) {
     enum LedState newState = OFF; // = this->m_ledState == OFF ? ON : OFF;
@@ -42,7 +42,7 @@ void esp::LedControl::loop() {
   }
 }
 
-void esp::LedControl::setState(enum LedState newState, uint16_t interval) {
+void LedControl::setState(enum LedState newState, uint16_t interval) {
   this->m_controlState = newState;
   this->m_ulKeepStateFor = interval;
 }

@@ -4,7 +4,7 @@
 #include "../IPC/Message.h"
 #include "../IPOCS/Message.h"
 #include "ArduinoConnection.h"
-#include "LedControl.hpp"
+#include "../LedControl.h"
 #include "ArduinoFlash.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -62,7 +62,7 @@ int onSoftAPModeProbeRequestReceived(const WiFiEventSoftAPModeProbeRequestReceiv
 
 void setup(void)
 {
-  esp::LedControl::instance().begin();
+  LedControl::instance().begin();
   char unitName[32];
   Configuration::getUnitName(unitName);
   WiFi.setOutputPower(20.5);
@@ -98,7 +98,7 @@ void loop(void)
   if (wifiMode == None) {
     connectionInitiated = millis();
     wifiMode = Normal;
-    esp::LedControl::instance().setState(BLINK, 100);
+    LedControl::instance().setState(BLINK, 100);
     setupWiFi();
   }
   if (wiFiStatus != WL_CONNECTED)
@@ -109,7 +109,7 @@ void loop(void)
       {
         char unitName[32];
         Configuration::getUnitName(unitName);
-        esp::LedControl::instance().setState(BLINK, 500);
+        LedControl::instance().setState(BLINK, 500);
         // WiFi failed to reconnect - go into soft AP mode
         WiFi.mode(WIFI_AP);
         WiFi.softAP(unitName);
@@ -123,7 +123,7 @@ void loop(void)
   {
     if (connectionInitiated != 0)
     {
-      esp::LedControl::instance().setState(BLINK, 1000);
+      LedControl::instance().setState(BLINK, 1000);
       // WiFi connected. Don't care if it's AP or Station mode.
       connectionInitiated = 0;
       esp::Http::instance().log(String("IP address: ") + WiFi.localIP().toString());
@@ -132,7 +132,7 @@ void loop(void)
   }
 
   esp::ArduinoFlash::instance().loop();
-  esp::LedControl::instance().loop();
+  LedControl::instance().loop();
   esp::Http::instance().loop();
   esp::ServerConnection::instance().loop(wifi_station_get_connect_status() == STATION_GOT_IP);
   esp::ArduinoConnection::instance().loop();
