@@ -66,7 +66,7 @@ size_t Configuration::getPassword(char pwd[])
   if (pwd[0] == 0xFF) {
     pwd[0] = 0x00;
   }
-  pwd[61] = 0x00; // Force null termination just in case
+  pwd[60] = 0x00; // Force null termination just in case
   return strlen(pwd);
 }
 
