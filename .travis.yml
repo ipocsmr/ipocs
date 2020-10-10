@@ -23,13 +23,16 @@ install:
 
 script:
 - npm run prod --prefix portal
-- platformio run -e esp8266 -e mega -e uno
+- platformio run -e esp8266 -e mega -e uno -e esp32dev
 - platformio run -e esp8266 -t uploadfs || true
 - platformio run -e esp8266 -t buildfs
+- platformio run -e esp32dev -t buildfs
 before_deploy:
 - mkdir dist
 - cp .pio/build/esp8266/firmware.bin dist/esp8266-firmware-$(git describe --dirty).bin
 - cp .pio/build/esp8266/littlefs.bin dist/esp8266-filesystem-$(git describe --dirty).bin
+- cp .pio/build/esp32dev/firmware.bin dist/esp32dev-firmware-$(git describe --dirty).bin
+- cp .pio/build/esp32dev/spiffs.bin dist/esp32dev-filesystem-$(git describe --dirty).bin
 - cp .pio/build/uno/firmware.hex dist/uno-firmware-$(git describe --dirty).hex
 - cp .pio/build/mega/firmware.hex dist/mega-firmware-$(git describe --dirty).hex
 - git status
