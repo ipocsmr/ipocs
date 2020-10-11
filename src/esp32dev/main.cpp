@@ -18,6 +18,8 @@
 #define PING_TIME 500
 #define WIFI_CONNECT 30000
 
+extern const uint8_t LED_PIN = 2;
+
 enum EWiFiMode {
   None,
   Normal,

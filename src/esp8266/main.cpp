@@ -16,6 +16,8 @@
 #define PING_TIME 500
 #define WIFI_CONNECT 30000
 
+extern const uint8_t LED_PIN = 14;
+
 std::list<WiFiEventHandler> wifiHandlers;
 
 enum EWiFiMode {

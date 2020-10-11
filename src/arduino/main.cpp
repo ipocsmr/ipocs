@@ -1,16 +1,3 @@
-/*
-  Connection to JMRI server
-
-  This sketch connects to the JMRI server
-  using an Arduino Wiznet Ethernet shield.
-
-  Circuit:
-   Ethernet shield attached to pins 10, 11, 12, 13
-
-  created 8 Dec 200916
-  by P Elestedt
-
-*/
 #include "../controller/EspConnection.h"
 #include "../controller/ObjectStore.h"
 #include "../IPC/Message.h"
@@ -22,6 +9,8 @@
 #define PRINT_TIME 50
 unsigned long lastPrint = 0;
 #endif
+
+extern const uint8_t LED_PIN = LED_BUILTIN;
 
 void setup(void) {
   MCUSR = ~(1 << WDRF); // allow us to disable WD

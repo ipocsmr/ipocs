@@ -1,7 +1,9 @@
-#include "../LedControl.h"
+#include "LedControl.h"
 #include <Arduino.h>
 
-#define LED_PIN 2
+// Any new system needs to define this variable somewhere.
+// High up in main.cpp is a good option.
+extern const uint8_t LED_PIN;
 
 LedControl& LedControl::instance() {
     static LedControl ctrl;
